@@ -61,7 +61,7 @@ export default function SignupPage() {
             <UserPlus className="h-8 w-8 text-primary" />
           </div>
           <CardTitle className="font-headline text-3xl">Create an Account</CardTitle>
-          <CardDescription>Join LearnBoostAI today!</CardDescription>
+          <CardDescription>Join LearnifyAI today!</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">

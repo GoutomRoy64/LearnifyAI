@@ -66,7 +66,7 @@ export default function LoginPage() {
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
             <BookOpen className="h-8 w-8 text-primary" />
           </div>
-          <CardTitle className="font-headline text-3xl">LearnBoostAI</CardTitle>
+          <CardTitle className="font-headline text-3xl">LearnifyAI</CardTitle>
           <CardDescription>Welcome back! Sign in to continue.</CardDescription>
         </CardHeader>
         <CardContent>

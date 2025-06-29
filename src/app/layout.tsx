@@ -4,7 +4,7 @@ import { AuthProvider } from '@/hooks/use-auth';
 import { Toaster } from '@/components/ui/toaster';
 
 export const metadata: Metadata = {
-  title: 'LearnBoostAI',
+  title: 'LearnifyAI',
   description: 'AI-Powered Learning Platform',
 };
 

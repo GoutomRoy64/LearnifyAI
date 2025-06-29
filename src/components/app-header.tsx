@@ -14,7 +14,7 @@ export function AppHeader() {
       <div className="container flex h-16 items-center space-x-4 sm:justify-between sm:space-x-0">
         <Link href="/" className="flex items-center gap-2">
           <BookOpen className="h-6 w-6 text-primary" />
-          <span className="font-headline text-lg font-bold">LearnBoostAI</span>
+          <span className="font-headline text-lg font-bold">LearnifyAI</span>
         </Link>
         <div className="flex flex-1 items-center justify-end space-x-4">
           <nav className="flex items-center space-x-1">
