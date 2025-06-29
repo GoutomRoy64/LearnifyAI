@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { BookOpen } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import Link from "next/link";
 
 export default function LoginPage() {
   const { login, user, loading } = useAuth();
@@ -55,6 +56,12 @@ export default function LoginPage() {
             <Button onClick={() => login('teacher')} variant="secondary" className="w-full">
               Login as Teacher
             </Button>
+          </div>
+           <div className="mt-4 text-center text-sm">
+            Don&apos;t have an account?{" "}
+            <Link href="/signup" className="font-medium text-primary hover:underline">
+              Sign up
+            </Link>
           </div>
         </CardContent>
       </Card>
