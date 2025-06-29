@@ -1,4 +1,4 @@
-import type { Quiz, User } from '@/lib/types';
+import type { Quiz, User, QuizAttempt } from '@/lib/types';
 
 export const mockUsers: User[] = [
   { id: 'student1', email: 'student@example.com', role: 'student', name: 'Alex Doe', password: 'password' },
@@ -52,6 +52,8 @@ export const mockQuizzes: Quiz[] = [
   },
 ];
 
+export const mockQuizAttempts: QuizAttempt[] = [];
+
 export const getQuizzesFromStorage = (): Quiz[] => {
     if (typeof window === 'undefined') return mockQuizzes;
     try {
@@ -71,4 +73,28 @@ export const getQuizzesFromStorage = (): Quiz[] => {
 export const setQuizzesToStorage = (quizzes: Quiz[]) => {
     if (typeof window === 'undefined') return;
     localStorage.setItem('quizzes', JSON.stringify(quizzes));
+};
+
+export const getQuizAttemptsFromStorage = (): QuizAttempt[] => {
+    if (typeof window === 'undefined') return mockQuizAttempts;
+    try {
+        const storedAttempts = localStorage.getItem('quiz_attempts');
+        if (storedAttempts) {
+            return JSON.parse(storedAttempts).map((attempt: QuizAttempt) => ({
+                ...attempt,
+                submittedAt: new Date(attempt.submittedAt),
+            }));
+        } else {
+            localStorage.setItem('quiz_attempts', JSON.stringify(mockQuizAttempts));
+            return mockQuizAttempts;
+        }
+    } catch (error) {
+        console.error("Failed to access localStorage or parse quiz attempts", error);
+        return mockQuizAttempts;
+    }
+};
+
+export const setQuizAttemptsToStorage = (attempts: QuizAttempt[]) => {
+    if (typeof window === 'undefined') return;
+    localStorage.setItem('quiz_attempts', JSON.stringify(attempts));
 };

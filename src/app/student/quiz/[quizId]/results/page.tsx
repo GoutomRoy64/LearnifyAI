@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { getQuizzesFromStorage } from '@/lib/mock-data';
+import { getQuizzesFromStorage, getQuizAttemptsFromStorage } from '@/lib/mock-data';
 import type { Quiz, QuizAttempt } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -10,11 +10,14 @@ import { CheckCircle2, XCircle, Award } from 'lucide-react';
 import { AiExplanation } from '@/components/ai-explanation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/hooks/use-auth';
 
 export default function ResultsPage() {
   const params = useParams();
   const quizId = params.quizId as string;
-  const [attempt, setAttempt] = useState<Omit<QuizAttempt, 'id' | 'studentId' | 'submittedAt'> | null>(null);
+  const { user } = useAuth();
+  
+  const [attempt, setAttempt] = useState<QuizAttempt | null>(null);
   const [quiz, setQuiz] = useState<Quiz | undefined>();
 
   useEffect(() => {
@@ -23,22 +26,17 @@ export default function ResultsPage() {
   }, [quizId]);
 
   useEffect(() => {
-    const savedAttempt = localStorage.getItem(`quiz_attempt_${quizId}`);
-    if (savedAttempt && quiz) {
-      const answers = JSON.parse(savedAttempt);
-      let score = 0;
-      quiz.questions.forEach(q => {
-        if (answers[q.id] === q.correctAnswer) {
-          score++;
-        }
-      });
-      setAttempt({
-        quizId,
-        answers,
-        score: (score / quiz.questions.length) * 100,
-      });
+    if (quiz && user) {
+      const allAttempts = getQuizAttemptsFromStorage();
+      const userAttemptsForThisQuiz = allAttempts
+        .filter(a => a.quizId === quizId && a.studentId === user.id)
+        .sort((a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime());
+
+      if (userAttemptsForThisQuiz.length > 0) {
+        setAttempt(userAttemptsForThisQuiz[0]);
+      }
     }
-  }, [quizId, quiz]);
+  }, [quizId, quiz, user]);
 
   if (!quiz || !attempt) {
     return (

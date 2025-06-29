@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
-import { getQuizzesFromStorage, setQuizzesToStorage } from "@/lib/mock-data";
+import { getQuizzesFromStorage, setQuizzesToStorage, getQuizAttemptsFromStorage } from "@/lib/mock-data";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -11,15 +11,18 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { MoreHorizontal, PlusCircle, Edit, Trash2, BarChart2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import type { Quiz } from "@/lib/types";
+import type { Quiz, QuizAttempt } from "@/lib/types";
 
 export default function TeacherDashboard() {
   const { user } = useAuth();
   const router = useRouter();
   
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
+  const [quizAttempts, setQuizAttempts] = useState<QuizAttempt[]>([]);
 
   useEffect(() => {
+    const allAttempts = getQuizAttemptsFromStorage();
+    setQuizAttempts(allAttempts);
     if (user) {
       const allQuizzes = getQuizzesFromStorage();
       setQuizzes(allQuizzes.filter(q => q.createdBy === user.id));
@@ -33,6 +36,10 @@ export default function TeacherDashboard() {
     setQuizzes(currentQuizzes => currentQuizzes.filter(q => q.id !== quizId));
   };
   
+  const getAttemptCount = (quizId: string) => {
+    return quizAttempts.filter(a => a.quizId === quizId).length;
+  };
+
   const skillLevelColors = {
     Beginner: "bg-green-100 text-green-800 border-green-200",
     Intermediate: "bg-yellow-100 text-yellow-800 border-yellow-200",
@@ -62,6 +69,7 @@ export default function TeacherDashboard() {
               <TableHead>Subject</TableHead>
               <TableHead>Skill Level</TableHead>
               <TableHead>Questions</TableHead>
+              <TableHead>Attempts</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -72,6 +80,7 @@ export default function TeacherDashboard() {
                 <TableCell>{quiz.subject}</TableCell>
                 <TableCell><Badge variant="outline" className={skillLevelColors[quiz.skillLevel]}>{quiz.skillLevel}</Badge></TableCell>
                 <TableCell>{quiz.questions.length}</TableCell>
+                <TableCell>{getAttemptCount(quiz.id)}</TableCell>
                 <TableCell className="text-right">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -110,7 +119,7 @@ export default function TeacherDashboard() {
               </TableRow>
             )) : (
               <TableRow>
-                <TableCell colSpan={5} className="h-24 text-center">
+                <TableCell colSpan={6} className="h-24 text-center">
                   No quizzes created yet.
                 </TableCell>
               </TableRow>

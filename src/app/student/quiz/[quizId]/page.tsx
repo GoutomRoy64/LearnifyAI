@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { getQuizzesFromStorage } from '@/lib/mock-data';
+import { getQuizzesFromStorage, getQuizAttemptsFromStorage, setQuizAttemptsToStorage } from '@/lib/mock-data';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -10,12 +10,14 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import type { Quiz } from '@/lib/types';
+import type { Quiz, QuizAttempt } from '@/lib/types';
+import { useAuth } from '@/hooks/use-auth';
 
 export default function QuizPage() {
   const params = useParams();
   const router = useRouter();
   const quizId = params.quizId as string;
+  const { user } = useAuth();
 
   const [quiz, setQuiz] = useState<Quiz | undefined>();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -54,8 +56,29 @@ export default function QuizPage() {
   };
   
   const handleSubmit = () => {
-    // In a real app, you'd save this to a database
-    localStorage.setItem(`quiz_attempt_${quizId}`, JSON.stringify(answers));
+    if (!user || !quiz) return;
+
+    // Calculate score
+    let score = 0;
+    quiz.questions.forEach(q => {
+      if (answers[q.id] === q.correctAnswer) {
+        score++;
+      }
+    });
+    const finalScore = (score / quiz.questions.length) * 100;
+
+    const newAttempt: QuizAttempt = {
+      id: `attempt-${Date.now()}`,
+      quizId: quiz.id,
+      studentId: user.id,
+      answers: answers,
+      score: finalScore,
+      submittedAt: new Date(),
+    };
+
+    const allAttempts = getQuizAttemptsFromStorage();
+    setQuizAttemptsToStorage([...allAttempts, newAttempt]);
+    
     router.push(`/student/quiz/${quizId}/results`);
   };
 
