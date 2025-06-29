@@ -1,23 +1,29 @@
 "use client";
 
-import { useState } from "react";
-import { mockQuizzes } from "@/lib/mock-data";
+import { useState, useEffect } from "react";
+import { getQuizzesFromStorage } from "@/lib/mock-data";
 import { QuizCard } from "@/components/quiz-card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/use-auth";
+import type { Quiz } from "@/lib/types";
 
 export default function StudentDashboard() {
   const { user } = useAuth();
   const [search, setSearch] = useState("");
   const [subject, setSubject] = useState("all");
   const [skillLevel, setSkillLevel] = useState("all");
+  const [quizzes, setQuizzes] = useState<Quiz[]>([]);
 
-  const subjects = ["all", ...Array.from(new Set(mockQuizzes.map(q => q.subject)))];
+  useEffect(() => {
+    setQuizzes(getQuizzesFromStorage());
+  }, []);
+
+  const subjects = ["all", ...Array.from(new Set(quizzes.map(q => q.subject)))];
   const skillLevels = ["all", "Beginner", "Intermediate", "Advanced"];
 
-  const filteredQuizzes = mockQuizzes.filter(quiz => {
+  const filteredQuizzes = quizzes.filter(quiz => {
     return (
       quiz.title.toLowerCase().includes(search.toLowerCase()) &&
       (subject === "all" || quiz.subject === subject) &&

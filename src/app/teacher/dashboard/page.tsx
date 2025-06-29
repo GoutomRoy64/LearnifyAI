@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
-import { mockQuizzes } from "@/lib/mock-data";
+import { getQuizzesFromStorage, setQuizzesToStorage } from "@/lib/mock-data";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -17,11 +17,19 @@ export default function TeacherDashboard() {
   const { user } = useAuth();
   const router = useRouter();
   
-  // In a real app, this would be a state managed with API calls
-  const [quizzes, setQuizzes] = useState<Quiz[]>(mockQuizzes.filter(q => q.createdBy === user?.id));
+  const [quizzes, setQuizzes] = useState<Quiz[]>([]);
+
+  useEffect(() => {
+    if (user) {
+      const allQuizzes = getQuizzesFromStorage();
+      setQuizzes(allQuizzes.filter(q => q.createdBy === user.id));
+    }
+  }, [user]);
 
   const handleDelete = (quizId: string) => {
-    // This is a mock delete
+    const allQuizzes = getQuizzesFromStorage();
+    const updatedQuizzes = allQuizzes.filter(q => q.id !== quizId);
+    setQuizzesToStorage(updatedQuizzes);
     setQuizzes(currentQuizzes => currentQuizzes.filter(q => q.id !== quizId));
   };
   

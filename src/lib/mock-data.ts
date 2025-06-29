@@ -51,3 +51,24 @@ export const mockQuizzes: Quiz[] = [
     ],
   },
 ];
+
+export const getQuizzesFromStorage = (): Quiz[] => {
+    if (typeof window === 'undefined') return mockQuizzes;
+    try {
+        const storedQuizzes = localStorage.getItem('quizzes');
+        if (storedQuizzes) {
+            return JSON.parse(storedQuizzes);
+        } else {
+            localStorage.setItem('quizzes', JSON.stringify(mockQuizzes));
+            return mockQuizzes;
+        }
+    } catch (error) {
+        console.error("Failed to access localStorage or parse quizzes", error);
+        return mockQuizzes;
+    }
+};
+
+export const setQuizzesToStorage = (quizzes: Quiz[]) => {
+    if (typeof window === 'undefined') return;
+    localStorage.setItem('quizzes', JSON.stringify(quizzes));
+};

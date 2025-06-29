@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { mockQuizzes } from '@/lib/mock-data';
+import { getQuizzesFromStorage } from '@/lib/mock-data';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -10,21 +10,26 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import type { Quiz } from '@/lib/types';
 
 export default function QuizPage() {
   const params = useParams();
   const router = useRouter();
   const quizId = params.quizId as string;
 
-  const quiz = useMemo(() => mockQuizzes.find(q => q.id === quizId), [quizId]);
-
+  const [quiz, setQuiz] = useState<Quiz | undefined>();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<{ [key: string]: string }>({});
+  
+  useEffect(() => {
+    const allQuizzes = getQuizzesFromStorage();
+    setQuiz(allQuizzes.find(q => q.id === quizId));
+  }, [quizId]);
 
   if (!quiz) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <p>Quiz not found.</p>
+        <p>Quiz not found or is loading...</p>
       </div>
     );
   }

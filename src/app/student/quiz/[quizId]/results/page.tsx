@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { mockQuizzes } from '@/lib/mock-data';
+import { getQuizzesFromStorage } from '@/lib/mock-data';
 import type { Quiz, QuizAttempt } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -15,8 +15,12 @@ export default function ResultsPage() {
   const params = useParams();
   const quizId = params.quizId as string;
   const [attempt, setAttempt] = useState<Omit<QuizAttempt, 'id' | 'studentId' | 'submittedAt'> | null>(null);
+  const [quiz, setQuiz] = useState<Quiz | undefined>();
 
-  const quiz = useMemo(() => mockQuizzes.find(q => q.id === quizId), [quizId]);
+  useEffect(() => {
+    const allQuizzes = getQuizzesFromStorage();
+    setQuiz(allQuizzes.find(q => q.id === quizId));
+  }, [quizId]);
 
   useEffect(() => {
     const savedAttempt = localStorage.getItem(`quiz_attempt_${quizId}`);

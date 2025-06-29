@@ -1,15 +1,28 @@
 "use client";
 
 import { QuizForm } from "@/components/quiz-form";
-import { mockQuizzes } from "@/lib/mock-data";
+import { getQuizzesFromStorage } from "@/lib/mock-data";
 import { useParams } from "next/navigation";
-import { useMemo } from "react";
+import { useEffect, useState } from "react";
+import type { Quiz } from "@/lib/types";
 
 export default function EditQuizPage() {
   const params = useParams();
   const quizId = params.quizId as string;
-  const quiz = useMemo(() => mockQuizzes.find(q => q.id === quizId), [quizId]);
+  const [quiz, setQuiz] = useState<Quiz | undefined>(undefined);
+  const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    const allQuizzes = getQuizzesFromStorage();
+    const foundQuiz = allQuizzes.find(q => q.id === quizId);
+    setQuiz(foundQuiz);
+    setLoading(false);
+  }, [quizId]);
+
+  if (loading) {
+    return <div className="container text-center py-12">Loading quiz...</div>;
+  }
+  
   if (!quiz) {
     return <div className="container text-center py-12">Quiz not found.</div>;
   }

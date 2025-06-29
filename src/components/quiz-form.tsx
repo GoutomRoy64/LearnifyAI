@@ -13,8 +13,11 @@ import { Trash2, PlusCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
+import { useAuth } from '@/hooks/use-auth';
+import { getQuizzesFromStorage, setQuizzesToStorage } from '@/lib/mock-data';
 
 const questionSchema = z.object({
+  id: z.string().optional(),
   text: z.string().min(1, 'Question text is required.'),
   options: z.array(z.string().min(1, 'Option text cannot be empty.')).min(2, 'At least two options are required.'),
   correctAnswer: z.string().min(1, 'A correct answer must be selected.'),
@@ -36,6 +39,7 @@ interface QuizFormProps {
 export function QuizForm({ initialData }: QuizFormProps) {
   const router = useRouter();
   const { toast } = useToast();
+  const { user } = useAuth();
   const { register, control, handleSubmit, formState: { errors }, watch } = useForm<QuizFormValues>({
     resolver: zodResolver(quizSchema),
     defaultValues: initialData ? {
@@ -55,13 +59,33 @@ export function QuizForm({ initialData }: QuizFormProps) {
   });
   
   const onSubmit = (data: QuizFormValues) => {
-    // In a real app, you would send this to your API
-    console.log(data);
+    if (!user) {
+      toast({ variant: "destructive", title: "Not logged in", description: "You need to be logged in to manage quizzes." });
+      return;
+    }
+    const allQuizzes = getQuizzesFromStorage();
+
+    if (initialData) {
+      // Editing existing quiz
+      const updatedQuizzes = allQuizzes.map(q => q.id === initialData.id ? { ...initialData, ...data } : q);
+      setQuizzesToStorage(updatedQuizzes);
+    } else {
+      // Creating new quiz
+      const newQuiz: Quiz = {
+        ...data,
+        id: `quiz-${Date.now()}`,
+        createdBy: user.id,
+        questions: data.questions.map((q, i) => ({ ...q, id: `q-${Date.now()}-${i}` })),
+      };
+      setQuizzesToStorage([...allQuizzes, newQuiz]);
+    }
+    
     toast({
       title: `Quiz ${initialData ? 'Updated' : 'Created'}!`,
       description: `The quiz "${data.title}" has been saved successfully.`,
     });
     router.push('/teacher/dashboard');
+    router.refresh();
   };
   
   return (
