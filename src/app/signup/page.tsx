@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { UserPlus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
 
 const signupSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
@@ -23,6 +24,7 @@ const signupSchema = z.object({
 type SignupFormValues = z.infer<typeof signupSchema>;
 
 export default function SignupPage() {
+  const { signup } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
   const { register, handleSubmit, formState: { errors }, control } = useForm<SignupFormValues>({
@@ -35,14 +37,20 @@ export default function SignupPage() {
   });
 
   const onSubmit = (data: SignupFormValues) => {
-    // In a real app, you would call your API to create a new user.
-    // Here we'll just show a success message and redirect.
-    console.log("Signup data:", data);
-    toast({
-      title: "Account Created!",
-      description: "You can now log in with your new account.",
-    });
-    router.push("/login");
+    const result = signup(data);
+    if (result.success) {
+      toast({
+        title: "Account Created!",
+        description: "You can now log in with your new account.",
+      });
+      router.push("/login");
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Signup Failed",
+        description: result.message,
+      });
+    }
   };
 
   return (

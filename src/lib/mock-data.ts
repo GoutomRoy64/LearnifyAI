@@ -1,8 +1,8 @@
 import type { Quiz, User } from '@/lib/types';
 
 export const mockUsers: User[] = [
-  { id: 'student1', email: 'student@example.com', role: 'student', name: 'Alex Doe' },
-  { id: 'teacher1', email: 'teacher@example.com', role: 'teacher', name: 'Dr. Evelyn Reed' },
+  { id: 'student1', email: 'student@example.com', role: 'student', name: 'Alex Doe', password: 'password' },
+  { id: 'teacher1', email: 'teacher@example.com', role: 'teacher', name: 'Dr. Evelyn Reed', password: 'password' },
 ];
 
 export const mockQuizzes: Quiz[] = [

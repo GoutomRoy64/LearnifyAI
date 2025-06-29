@@ -19,6 +19,7 @@ export interface User {
   email: string;
   role: 'student' | 'teacher';
   name: string;
+  password?: string;
 }
 
 export interface QuizAttempt {
