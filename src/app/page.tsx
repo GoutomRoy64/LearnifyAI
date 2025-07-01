@@ -137,13 +137,13 @@ export default function LandingPage() {
                     <ul className="space-y-2">
                         <li><Link href="#features" className="text-sm hover:text-white transition-colors">Features</Link></li>
                         <li><Link href="#pricing" className="text-sm hover:text-white transition-colors">Pricing</Link></li>
-                        <li><Link href="#about" className="text-sm hover:text-white transition-colors">About Us</Link></li>
+                        <li><Link href="https://goutomroy64.github.io/Portfolio_V1" className="text-sm hover:text-white transition-colors">About Us</Link></li>
                     </ul>
                 </div>
                 <div>
                      <h4 className="font-semibold text-white tracking-wider mb-4">Follow Us</h4>
                      <div className="flex items-center gap-4">
-                        <Link href="#" aria-label="Facebook"><Facebook className="h-6 w-6 hover:text-white transition-colors"/></Link>
+                        <Link href="https://www.facebook.com/GoutomRoy64" aria-label="Facebook"><Facebook className="h-6 w-6 hover:text-white transition-colors"/></Link>
                         <Link href="#" aria-label="Twitter"><Twitter className="h-6 w-6 hover:text-white transition-colors"/></Link>
                         <Link href="#" aria-label="LinkedIn"><Linkedin className="h-6 w-6 hover:text-white transition-colors"/></Link>
                      </div>
