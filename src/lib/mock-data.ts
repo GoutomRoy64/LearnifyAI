@@ -1,4 +1,4 @@
-import type { Quiz, User, QuizAttempt } from '@/lib/types';
+import type { Quiz, User, QuizAttempt, Classroom, JoinRequest } from '@/lib/types';
 
 export const mockUsers: User[] = [
   { id: 'student1', email: 'student@example.com', role: 'student', name: 'Alex Doe', password: 'password' },
@@ -55,6 +55,11 @@ export const mockQuizzes: Quiz[] = [
 ];
 
 export const mockQuizAttempts: QuizAttempt[] = [];
+
+export const mockClassrooms: Classroom[] = [];
+
+export const mockJoinRequests: JoinRequest[] = [];
+
 
 // User Data Functions
 export const getUsersFromStorage = (): User[] => {
@@ -123,4 +128,51 @@ export const getQuizAttemptsFromStorage = (): QuizAttempt[] => {
 export const setQuizAttemptsToStorage = (attempts: QuizAttempt[]) => {
     if (typeof window === 'undefined') return;
     localStorage.setItem('quiz_attempts', JSON.stringify(attempts));
+};
+
+// Classroom Data Functions
+export const getClassroomsFromStorage = (): Classroom[] => {
+    if (typeof window === 'undefined') return mockClassrooms;
+    try {
+        const storedClassrooms = localStorage.getItem('classrooms');
+        if (storedClassrooms) {
+            return JSON.parse(storedClassrooms);
+        } else {
+            localStorage.setItem('classrooms', JSON.stringify(mockClassrooms));
+            return mockClassrooms;
+        }
+    } catch (error) {
+        console.error("Failed to access localStorage or parse classrooms", error);
+        return mockClassrooms;
+    }
+};
+
+export const setClassroomsToStorage = (classrooms: Classroom[]) => {
+    if (typeof window === 'undefined') return;
+    localStorage.setItem('classrooms', JSON.stringify(classrooms));
+};
+
+// Join Request Functions
+export const getJoinRequestsFromStorage = (): JoinRequest[] => {
+    if (typeof window === 'undefined') return mockJoinRequests;
+    try {
+        const storedRequests = localStorage.getItem('join_requests');
+        if (storedRequests) {
+            return JSON.parse(storedRequests).map((request: JoinRequest) => ({
+                ...request,
+                requestedAt: new Date(request.requestedAt),
+            }));
+        } else {
+            localStorage.setItem('join_requests', JSON.stringify(mockJoinRequests));
+            return mockJoinRequests;
+        }
+    } catch (error) {
+        console.error("Failed to access localStorage or parse join requests", error);
+        return mockJoinRequests;
+    }
+};
+
+export const setJoinRequestsToStorage = (requests: JoinRequest[]) => {
+    if (typeof window === 'undefined') return;
+    localStorage.setItem('join_requests', JSON.stringify(requests));
 };

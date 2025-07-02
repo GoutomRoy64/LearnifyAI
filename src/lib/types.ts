@@ -31,3 +31,20 @@ export interface QuizAttempt {
   score: number;
   submittedAt: Date;
 }
+
+export interface Classroom {
+  id: string;
+  name: string;
+  subject: string;
+  createdBy: string; // teacherId
+  joinCode: string;
+  studentIds: string[];
+}
+
+export interface JoinRequest {
+    id: string;
+    classroomId: string;
+    studentId: string;
+    status: 'pending' | 'approved' | 'denied';
+    requestedAt: Date;
+}
