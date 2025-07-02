@@ -81,9 +81,9 @@ export function QuizForm({ initialData }: QuizFormProps) {
       // Creating new quiz
       const newQuiz: Quiz = {
         ...quizData,
-        id: `quiz-${Date.now()}`,
+        id: crypto.randomUUID(),
         createdBy: user.id,
-        questions: data.questions.map((q, i) => ({ ...q, id: `q-${Date.now()}-${i}` })),
+        questions: data.questions.map((q) => ({ ...q, id: crypto.randomUUID() })),
       };
       setQuizzesToStorage([...allQuizzes, newQuiz]);
     }

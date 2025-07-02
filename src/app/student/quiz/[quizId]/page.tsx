@@ -49,7 +49,7 @@ export default function QuizPage() {
     const finalScore = (score / quiz.questions.length) * 100;
 
     const newAttempt: QuizAttempt = {
-      id: `attempt-${Date.now()}`,
+      id: crypto.randomUUID(),
       quizId: quiz.id,
       studentId: user.id,
       answers: answers,

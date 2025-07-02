@@ -142,7 +142,7 @@ function ClassroomsTab({ user }: { user: User }) {
         const allRequests = getJoinRequestsFromStorage();
 
         const newRequest: JoinRequest = {
-            id: `req-${Date.now()}`,
+            id: crypto.randomUUID(),
             classroomId: classroomId,
             studentId: user.id,
             status: 'pending',

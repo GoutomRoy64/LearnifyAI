@@ -46,7 +46,7 @@ export default function CreateClassroomPage() {
         }
 
         const newClassroom: Classroom = {
-            id: `cls-${Date.now()}`,
+            id: crypto.randomUUID(),
             createdBy: user.id,
             joinCode: generateJoinCode(),
             studentIds: [],
