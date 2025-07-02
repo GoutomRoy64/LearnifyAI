@@ -93,7 +93,7 @@ export default function TeacherDashboard() {
                       <DropdownMenuItem onClick={() => router.push(`/teacher/quiz/${quiz.id}/edit`)} className="cursor-pointer">
                         <Edit className="mr-2 h-4 w-4" /> Edit
                       </DropdownMenuItem>
-                      <DropdownMenuItem className="cursor-pointer" disabled>
+                      <DropdownMenuItem onClick={() => router.push(`/teacher/quiz/${quiz.id}/results`)} className="cursor-pointer" disabled={getAttemptCount(quiz.id) === 0}>
                         <BarChart2 className="mr-2 h-4 w-4" /> View Results
                       </DropdownMenuItem>
                       <AlertDialog>

@@ -56,6 +56,29 @@ export const mockQuizzes: Quiz[] = [
 
 export const mockQuizAttempts: QuizAttempt[] = [];
 
+// User Data Functions
+export const getUsersFromStorage = (): User[] => {
+    if (typeof window === 'undefined') return mockUsers;
+    try {
+        const storedUsers = localStorage.getItem('users');
+        if (storedUsers) {
+            return JSON.parse(storedUsers);
+        } else {
+            localStorage.setItem('users', JSON.stringify(mockUsers));
+            return mockUsers;
+        }
+    } catch (error) {
+        console.error("Failed to access localStorage or parse users", error);
+        return mockUsers;
+    }
+};
+
+export const setUsersToStorage = (users: User[]) => {
+    if (typeof window === 'undefined') return;
+    localStorage.setItem('users', JSON.stringify(users));
+};
+
+// Quiz Data Functions
 export const getQuizzesFromStorage = (): Quiz[] => {
     if (typeof window === 'undefined') return mockQuizzes;
     try {
@@ -77,6 +100,7 @@ export const setQuizzesToStorage = (quizzes: Quiz[]) => {
     localStorage.setItem('quizzes', JSON.stringify(quizzes));
 };
 
+// Quiz Attempt Functions
 export const getQuizAttemptsFromStorage = (): QuizAttempt[] => {
     if (typeof window === 'undefined') return mockQuizAttempts;
     try {

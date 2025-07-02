@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import type { User } from '@/lib/types';
-import { mockUsers } from '@/lib/mock-data';
+import { getUsersFromStorage, setUsersToStorage } from '@/lib/mock-data';
 import { usePathname, useRouter } from 'next/navigation';
 
 interface AuthContextType {
@@ -14,28 +14,6 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-const getUsersFromStorage = (): User[] => {
-    if (typeof window === 'undefined') return mockUsers;
-    try {
-        const storedUsers = localStorage.getItem('users');
-        if (storedUsers) {
-            return JSON.parse(storedUsers);
-        } else {
-            localStorage.setItem('users', JSON.stringify(mockUsers));
-            return mockUsers;
-        }
-    } catch (error) {
-        console.error("Failed to access localStorage or parse users", error);
-        return mockUsers;
-    }
-};
-
-const setUsersToStorage = (users: User[]) => {
-    if (typeof window === 'undefined') return;
-    localStorage.setItem('users', JSON.stringify(users));
-};
-
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
