@@ -28,6 +28,7 @@ const quizSchema = z.object({
   subject: z.string().min(1, 'Subject is required.'),
   skillLevel: z.enum(['Beginner', 'Intermediate', 'Advanced']),
   questions: z.array(questionSchema).min(1, 'At least one question is required.'),
+  timer: z.coerce.number().min(0, "Timer can't be negative.").optional(),
 });
 
 type QuizFormValues = z.infer<typeof quizSchema>;
@@ -44,12 +45,14 @@ export function QuizForm({ initialData }: QuizFormProps) {
     resolver: zodResolver(quizSchema),
     defaultValues: initialData ? {
         ...initialData,
+        timer: initialData.timer || undefined,
         questions: initialData.questions.map(q => ({...q, options: [...q.options]}))
     } : {
       title: '',
       subject: '',
       skillLevel: 'Beginner',
       questions: [{ text: '', options: ['', ''], correctAnswer: '' }],
+      timer: undefined,
     },
   });
 
@@ -65,14 +68,19 @@ export function QuizForm({ initialData }: QuizFormProps) {
     }
     const allQuizzes = getQuizzesFromStorage();
 
+    const quizData = {
+        ...data,
+        timer: data.timer && data.timer > 0 ? data.timer : undefined,
+    }
+
     if (initialData) {
       // Editing existing quiz
-      const updatedQuizzes = allQuizzes.map(q => q.id === initialData.id ? { ...initialData, ...data } : q);
+      const updatedQuizzes = allQuizzes.map(q => q.id === initialData.id ? { ...initialData, ...quizData } : q);
       setQuizzesToStorage(updatedQuizzes);
     } else {
       // Creating new quiz
       const newQuiz: Quiz = {
-        ...data,
+        ...quizData,
         id: `quiz-${Date.now()}`,
         createdBy: user.id,
         questions: data.questions.map((q, i) => ({ ...q, id: `q-${Date.now()}-${i}` })),
@@ -122,6 +130,12 @@ export function QuizForm({ initialData }: QuizFormProps) {
                     </Select>
                 )}
             />
+          </div>
+          <div className="space-y-2">
+             <Label htmlFor="timer">Timer (minutes)</Label>
+             <Input id="timer" type="number" {...register('timer')} placeholder="e.g., 10" />
+             <p className="text-sm text-muted-foreground">Leave blank or 0 for no time limit.</p>
+             {errors.timer && <p className="text-sm text-destructive">{errors.timer.message}</p>}
           </div>
         </CardContent>
       </Card>

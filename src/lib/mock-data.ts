@@ -16,6 +16,7 @@ export const mockQuizzes: Quiz[] = [
       { id: 'q1', text: 'What is 2 + 2?', options: ['3', '4', '5', '6'], correctAnswer: '4' },
       { id: 'q2', text: 'What is x in x + 5 = 10?', options: ['3', '4', '5', '6'], correctAnswer: '5' },
     ],
+    timer: 5,
   },
   {
     id: '2',
@@ -28,6 +29,7 @@ export const mockQuizzes: Quiz[] = [
       { id: 'q2', text: 'Which gas is released during photosynthesis?', options: ['Carbon Dioxide', 'Nitrogen', 'Oxygen', 'Hydrogen'], correctAnswer: 'Oxygen' },
       { id: 'q3', text: 'What is the main source of energy for photosynthesis?', options: ['Geothermal Heat', 'Sunlight', 'Wind', 'Water'], correctAnswer: 'Sunlight' },
     ],
+    timer: 10,
   },
   {
     id: '3',

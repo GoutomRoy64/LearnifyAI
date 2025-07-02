@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import type { Quiz } from "@/lib/types";
-import { BookOpen, BarChart, ChevronRight } from "lucide-react";
+import { BookOpen, BarChart, ChevronRight, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface QuizCardProps {
@@ -27,11 +27,17 @@ export function QuizCard({ quiz }: QuizCardProps) {
           <span>{quiz.subject}</span>
         </CardDescription>
       </CardHeader>
-      <CardContent className="flex-grow">
+      <CardContent className="flex-grow space-y-2">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <BarChart className="h-4 w-4" />
           <span>{quiz.questions.length} Questions</span>
         </div>
+        {quiz.timer && quiz.timer > 0 && (
+           <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Clock className="h-4 w-4" />
+            <span>{quiz.timer} minutes</span>
+          </div>
+        )}
       </CardContent>
       <CardFooter>
         <Button asChild className="w-full">

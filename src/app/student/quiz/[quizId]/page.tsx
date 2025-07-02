@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { getQuizzesFromStorage, getQuizAttemptsFromStorage, setQuizAttemptsToStorage } from '@/lib/mock-data';
 import { Button } from '@/components/ui/button';
@@ -8,25 +8,90 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Progress } from '@/components/ui/progress';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Clock } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import type { Quiz, QuizAttempt } from '@/lib/types';
 import { useAuth } from '@/hooks/use-auth';
+import { useToast } from '@/hooks/use-toast';
+
+
+const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+};
 
 export default function QuizPage() {
   const params = useParams();
   const router = useRouter();
   const quizId = params.quizId as string;
   const { user } = useAuth();
+  const { toast } = useToast();
 
   const [quiz, setQuiz] = useState<Quiz | undefined>();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<{ [key: string]: string }>({});
+  const [timeLeft, setTimeLeft] = useState<number | null>(null);
+  const [isSubmitted, setIsSubmitted] = useState(false);
   
+  const handleSubmit = useCallback(() => {
+    if (!user || !quiz || isSubmitted) return;
+
+    setIsSubmitted(true);
+
+    // Calculate score
+    let score = 0;
+    quiz.questions.forEach(q => {
+      if (answers[q.id] === q.correctAnswer) {
+        score++;
+      }
+    });
+    const finalScore = (score / quiz.questions.length) * 100;
+
+    const newAttempt: QuizAttempt = {
+      id: `attempt-${Date.now()}`,
+      quizId: quiz.id,
+      studentId: user.id,
+      answers: answers,
+      score: finalScore,
+      submittedAt: new Date(),
+    };
+
+    const allAttempts = getQuizAttemptsFromStorage();
+    setQuizAttemptsToStorage([...allAttempts, newAttempt]);
+    
+    router.push(`/student/quiz/${quizId}/results`);
+  }, [user, quiz, answers, router, quizId, isSubmitted]);
+
   useEffect(() => {
     const allQuizzes = getQuizzesFromStorage();
-    setQuiz(allQuizzes.find(q => q.id === quizId));
+    const currentQuiz = allQuizzes.find(q => q.id === quizId);
+    setQuiz(currentQuiz);
+
+    if (currentQuiz?.timer && currentQuiz.timer > 0) {
+        setTimeLeft(currentQuiz.timer * 60);
+    }
   }, [quizId]);
+
+  useEffect(() => {
+    if (timeLeft === null || isSubmitted) return;
+
+    if (timeLeft <= 0) {
+      toast({
+        variant: "destructive",
+        title: "Time's up!",
+        description: "Your quiz is being submitted automatically.",
+      });
+      handleSubmit();
+      return;
+    }
+
+    const intervalId = setInterval(() => {
+      setTimeLeft(prev => (prev ? prev - 1 : 0));
+    }, 1000);
+
+    return () => clearInterval(intervalId);
+  }, [timeLeft, handleSubmit, isSubmitted, toast]);
 
   if (!quiz) {
     return (
@@ -54,39 +119,21 @@ export default function QuizPage() {
       setCurrentQuestionIndex(prev => prev - 1);
     }
   };
-  
-  const handleSubmit = () => {
-    if (!user || !quiz) return;
-
-    // Calculate score
-    let score = 0;
-    quiz.questions.forEach(q => {
-      if (answers[q.id] === q.correctAnswer) {
-        score++;
-      }
-    });
-    const finalScore = (score / quiz.questions.length) * 100;
-
-    const newAttempt: QuizAttempt = {
-      id: `attempt-${Date.now()}`,
-      quizId: quiz.id,
-      studentId: user.id,
-      answers: answers,
-      score: finalScore,
-      submittedAt: new Date(),
-    };
-
-    const allAttempts = getQuizAttemptsFromStorage();
-    setQuizAttemptsToStorage([...allAttempts, newAttempt]);
-    
-    router.push(`/student/quiz/${quizId}/results`);
-  };
 
   return (
     <div className="container mx-auto max-w-2xl py-12">
       <Card className="shadow-xl">
         <CardHeader>
-          <Progress value={progressValue} className="mb-4" />
+            <div className="flex justify-between items-center mb-4 gap-4">
+                <Progress value={progressValue} className="w-full" />
+                {timeLeft !== null && (
+                    <div className="flex items-center gap-2 font-mono text-lg font-semibold shrink-0"
+                        title="Time Remaining">
+                        <Clock className="h-5 w-5" />
+                        <span className={timeLeft < 60 ? "text-destructive" : ""}>{formatTime(timeLeft)}</span>
+                    </div>
+                )}
+            </div>
           <CardDescription>Question {currentQuestionIndex + 1} of {quiz.questions.length}</CardDescription>
           <CardTitle className="font-headline text-2xl pt-2">{currentQuestion.text}</CardTitle>
         </CardHeader>

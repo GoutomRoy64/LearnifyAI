@@ -12,6 +12,7 @@ export interface Quiz {
   skillLevel: 'Beginner' | 'Intermediate' | 'Advanced';
   createdBy: string; // teacherId
   questions: Question[];
+  timer?: number; // Duration in minutes
 }
 
 export interface User {
