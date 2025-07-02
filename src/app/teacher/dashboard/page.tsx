@@ -52,6 +52,7 @@ export default function TeacherDashboard() {
         <div>
           <h1 className="font-headline text-3xl md:text-4xl font-bold">My Quizzes</h1>
           <p className="text-muted-foreground text-lg">Manage, edit, and view results for your quizzes.</p>
+          {user && <p className="text-sm text-muted-foreground pt-1">Your ID: <code className="bg-muted px-1.5 py-1 rounded-sm">{user.id}</code></p>}
         </div>
         <Button asChild>
           <Link href="/teacher/quiz/create">
