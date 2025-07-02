@@ -17,7 +17,6 @@ const QuestionSchema = z.object({
 });
 
 const GenerateQuizInputSchema = z.object({
-  sourceType: z.enum(['topic', 'text']).describe('The source of content for the quiz.'),
   sourceContent: z.string().describe('The topic or text content for the quiz.'),
   numQuestions: z.coerce.number().int().min(1).max(10).describe('The number of questions to generate.'),
   skillLevel: z.enum(['Beginner', 'Intermediate', 'Advanced']).describe('The skill level for the quiz questions.'),
@@ -42,17 +41,9 @@ const prompt = ai.definePrompt({
   Quiz Details:
   - Skill Level: {{{skillLevel}}}
   - Number of Questions: {{{numQuestions}}}
-  - Source Type: {{{sourceType}}}
 
-  {{#if (eq sourceType 'topic')}}
-  Generate the quiz based on the following topic:
+  Generate the quiz based on the following content, which may be a simple topic or a larger block of text:
   "{{{sourceContent}}}"
-  {{/if}}
-
-  {{#if (eq sourceType 'text')}}
-  Generate the quiz based on the following text content:
-  "{{{sourceContent}}}"
-  {{/if}}
 
   For each question, provide the question text, a list of 4-5 options (including one correct answer and several plausible distractors), and specify the correct answer. Ensure the questions are relevant to the provided content and appropriate for the specified skill level.
   `,

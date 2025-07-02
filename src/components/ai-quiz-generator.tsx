@@ -6,9 +6,7 @@ import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "./ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Label } from "./ui/label";
-import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Wand2, Loader2 } from "lucide-react";
@@ -27,7 +25,6 @@ interface AiQuizGeneratorProps {
 }
 
 const generatorSchema = z.object({
-  sourceType: z.enum(['topic', 'text']),
   sourceContent: z.string().min(10, 'Please provide more content to generate questions from.'),
   numQuestions: z.coerce.number().int().min(1).max(10),
 });
@@ -42,13 +39,10 @@ export function AiQuizGenerator({ onQuestionsGenerated, skillLevel }: AiQuizGene
     const form = useForm<GeneratorFormValues>({
         resolver: zodResolver(generatorSchema),
         defaultValues: {
-            sourceType: "topic",
             sourceContent: "",
             numQuestions: 5,
         }
     });
-    
-    const sourceType = form.watch("sourceType");
 
     const onSubmit = async (data: GeneratorFormValues) => {
         setIsLoading(true);
@@ -68,6 +62,7 @@ export function AiQuizGenerator({ onQuestionsGenerated, skillLevel }: AiQuizGene
             });
             onQuestionsGenerated(result.questions);
             setIsOpen(false);
+            form.reset();
         }
     };
     
@@ -87,26 +82,16 @@ export function AiQuizGenerator({ onQuestionsGenerated, skillLevel }: AiQuizGene
                     </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                     <Tabs defaultValue="topic" className="w-full" onValueChange={(value) => form.setValue("sourceType", value as 'topic' | 'text')}>
-                        <TabsList className="grid w-full grid-cols-2">
-                            <TabsTrigger value="topic">From Topic</TabsTrigger>
-                            <TabsTrigger value="text">From Text</TabsTrigger>
-                        </TabsList>
-                        <TabsContent value="topic" className="pt-4">
-                             <div className="space-y-2">
-                                <Label htmlFor="topic-content">Topic</Label>
-                                <Input id="topic-content" {...form.register("sourceContent")} placeholder="e.g., The American Revolution" />
-                                {form.formState.errors.sourceContent && sourceType === 'topic' && <p className="text-sm text-destructive">{form.formState.errors.sourceContent.message}</p>}
-                            </div>
-                        </TabsContent>
-                        <TabsContent value="text" className="pt-4">
-                             <div className="space-y-2">
-                                <Label htmlFor="text-content">Text Content</Label>
-                                <Textarea id="text-content" {...form.register("sourceContent")} placeholder="Paste a chapter or an article here..." rows={8}/>
-                                {form.formState.errors.sourceContent && sourceType === 'text' && <p className="text-sm text-destructive">{form.formState.errors.sourceContent.message}</p>}
-                            </div>
-                        </TabsContent>
-                    </Tabs>
+                     <div className="space-y-2">
+                        <Label htmlFor="text-content">Topic or Text Content</Label>
+                        <Textarea 
+                            id="text-content" 
+                            {...form.register("sourceContent")} 
+                            placeholder="Enter a topic (e.g., The American Revolution) or paste a larger block of text here..." 
+                            rows={8}
+                        />
+                        {form.formState.errors.sourceContent && <p className="text-sm text-destructive">{form.formState.errors.sourceContent.message}</p>}
+                    </div>
 
                     <div className="space-y-2">
                         <Label>Number of Questions</Label>
