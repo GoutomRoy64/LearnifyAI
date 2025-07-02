@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -37,8 +38,8 @@ export default function TeacherQuizResultsPage() {
     setLoading(false);
   }, [quizId]);
 
-  const getStudentName = (studentId: string) => {
-    return users.find(u => u.id === studentId)?.name || "Unknown Student";
+  const getStudent = (studentId: string): User | undefined => {
+    return users.find(u => u.id === studentId);
   };
 
   if (loading) {
@@ -99,19 +100,31 @@ export default function TeacherQuizResultsPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Student Name</TableHead>
+                <TableHead>Student</TableHead>
                 <TableHead>Score</TableHead>
                 <TableHead>Date Submitted</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {attempts.map(attempt => (
-                <TableRow key={attempt.id}>
-                  <TableCell className="font-medium">{getStudentName(attempt.studentId)}</TableCell>
-                  <TableCell>{Math.round(attempt.score)}%</TableCell>
-                  <TableCell>{format(new Date(attempt.submittedAt), "PPP p")}</TableCell>
-                </TableRow>
-              ))}
+              {attempts.map(attempt => {
+                const student = getStudent(attempt.studentId);
+                return (
+                  <TableRow key={attempt.id}>
+                    <TableCell className="font-medium">
+                      {student ? (
+                        <div>
+                          <p>{student.name}</p>
+                          <p className="text-xs text-muted-foreground">ID: {student.id}</p>
+                        </div>
+                      ) : (
+                        "Unknown Student"
+                      )}
+                    </TableCell>
+                    <TableCell>{Math.round(attempt.score)}%</TableCell>
+                    <TableCell>{format(new Date(attempt.submittedAt), "PPP p")}</TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </div>
