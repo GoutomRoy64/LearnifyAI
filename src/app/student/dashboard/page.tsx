@@ -139,7 +139,7 @@ function ClassroomsTab({ user }: { user: User }) {
         setAllClassrooms(classrooms);
         setMyClassrooms(classrooms.filter(c => myClassroomIds.includes(c.id)));
         setAvailableClassrooms(classrooms.filter(c => !myClassroomIds.includes(c.id) && !myRequestedClassroomIds.includes(c.id)));
-    }, [user.id, requests]);
+    }, [user.id]);
 
     const handleJoinRequest = (classroomId: string) => {
         const allRequests = getJoinRequestsFromStorage();
