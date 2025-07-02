@@ -40,12 +40,21 @@ const quizSchema = z.object({
 
 type QuizFormValues = z.infer<typeof quizSchema>;
 
+type GeneratedQuestion = {
+    id?: string;
+    text: string;
+    options: string[];
+    correctAnswer: string;
+}
+
 interface QuizFormProps {
   initialData?: Quiz;
   classroomId?: string;
+  generatedQuestions?: GeneratedQuestion[];
+  onSkillLevelChange?: (level: 'Beginner' | 'Intermediate' | 'Advanced') => void;
 }
 
-export function QuizForm({ initialData, classroomId: classroomIdFromUrl }: QuizFormProps) {
+export function QuizForm({ initialData, classroomId: classroomIdFromUrl, generatedQuestions, onSkillLevelChange }: QuizFormProps) {
   const router = useRouter();
   const { toast } = useToast();
   const { user } = useAuth();
@@ -63,19 +72,32 @@ export function QuizForm({ initialData, classroomId: classroomIdFromUrl }: QuizF
       title: '',
       subject: '',
       skillLevel: 'Beginner',
-      questions: [{ text: '', options: ['', ''], correctAnswer: '' }],
+      questions: [{ id: 'q1', text: '', options: ['', ''], correctAnswer: '' }],
       timer: undefined,
       dueDate: undefined,
       classroomId: classroomIdFromUrl || "public",
     },
   });
 
-  const { fields, append, remove } = useFieldArray({
+  const { fields, append, remove, replace } = useFieldArray({
     control,
     name: 'questions',
   });
   
   const selectedClassroomId = watch('classroomId');
+  const skillLevel = watch('skillLevel');
+
+  useEffect(() => {
+    if(onSkillLevelChange) {
+        onSkillLevelChange(skillLevel);
+    }
+  }, [skillLevel, onSkillLevelChange]);
+
+  useEffect(() => {
+    if (generatedQuestions && generatedQuestions.length > 0) {
+      replace(generatedQuestions);
+    }
+  }, [generatedQuestions, replace]);
 
   useEffect(() => {
     if (user) {
@@ -268,7 +290,7 @@ export function QuizForm({ initialData, classroomId: classroomIdFromUrl }: QuizF
             </CardContent>
           </Card>
         )})}
-        <Button type="button" variant="outline" onClick={() => append({ text: '', options: ['', ''], correctAnswer: '' })}>
+        <Button type="button" variant="outline" onClick={() => append({ id: `new-${Date.now()}`, text: '', options: ['', ''], correctAnswer: '' })}>
           <PlusCircle className="mr-2 h-4 w-4" /> Add Question
         </Button>
       </div>
