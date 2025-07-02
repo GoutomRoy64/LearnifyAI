@@ -45,15 +45,18 @@ export default function CreateClassroomPage() {
             return;
         }
 
+        const allClassrooms = getClassroomsFromStorage();
+        const existingIds = allClassrooms.map(c => parseInt(c.id, 10)).filter(id => !isNaN(id));
+        const newClassroomId = (Math.max(0, ...existingIds) + 1).toString();
+
         const newClassroom: Classroom = {
-            id: crypto.randomUUID(),
+            id: newClassroomId,
             createdBy: user.id,
             joinCode: generateJoinCode(),
             studentIds: [],
             ...data
         };
         
-        const allClassrooms = getClassroomsFromStorage();
         setClassroomsToStorage([...allClassrooms, newClassroom]);
         
         toast({ title: "Success!", description: "Classroom created successfully." });

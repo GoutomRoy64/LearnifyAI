@@ -1,8 +1,8 @@
 import type { Quiz, User, QuizAttempt, Classroom, JoinRequest } from '@/lib/types';
 
 export const mockUsers: User[] = [
-  { id: 'student1', email: 'student@example.com', role: 'student', name: 'Alex Doe', password: 'password' },
-  { id: 'teacher1', email: 'teacher@example.com', role: 'teacher', name: 'Dr. Evelyn Reed', password: 'password' },
+  { id: '1', email: 'student@example.com', role: 'student', name: 'Alex Doe', password: 'password' },
+  { id: '2', email: 'teacher@example.com', role: 'teacher', name: 'Dr. Evelyn Reed', password: 'password' },
 ];
 
 export const mockQuizzes: Quiz[] = [
@@ -11,10 +11,10 @@ export const mockQuizzes: Quiz[] = [
     title: 'Algebra Basics',
     subject: 'Math',
     skillLevel: 'Beginner',
-    createdBy: 'teacher1',
+    createdBy: '2',
     questions: [
-      { id: 'q1', text: 'What is 2 + 2?', options: ['3', '4', '5', '6'], correctAnswer: '4' },
-      { id: 'q2', text: 'What is x in x + 5 = 10?', options: ['3', '4', '5', '6'], correctAnswer: '5' },
+      { id: '101', text: 'What is 2 + 2?', options: ['3', '4', '5', '6'], correctAnswer: '4' },
+      { id: '102', text: 'What is x in x + 5 = 10?', options: ['3', '4', '5', '6'], correctAnswer: '5' },
     ],
     timer: 5,
   },
@@ -23,11 +23,11 @@ export const mockQuizzes: Quiz[] = [
     title: 'Introduction to Photosynthesis',
     subject: 'Science',
     skillLevel: 'Beginner',
-    createdBy: 'teacher1',
+    createdBy: '2',
     questions: [
-      { id: 'q1', text: 'What is the primary pigment used in photosynthesis?', options: ['Chlorophyll', 'Melanin', 'Hemoglobin', 'Carotene'], correctAnswer: 'Chlorophyll' },
-      { id: 'q2', text: 'Which gas is released during photosynthesis?', options: ['Carbon Dioxide', 'Nitrogen', 'Oxygen', 'Hydrogen'], correctAnswer: 'Oxygen' },
-      { id: 'q3', text: 'What is the main source of energy for photosynthesis?', options: ['Geothermal Heat', 'Sunlight', 'Wind', 'Water'], correctAnswer: 'Sunlight' },
+      { id: '201', text: 'What is the primary pigment used in photosynthesis?', options: ['Chlorophyll', 'Melanin', 'Hemoglobin', 'Carotene'], correctAnswer: 'Chlorophyll' },
+      { id: '202', text: 'Which gas is released during photosynthesis?', options: ['Carbon Dioxide', 'Nitrogen', 'Oxygen', 'Hydrogen'], correctAnswer: 'Oxygen' },
+      { id: '203', text: 'What is the main source of energy for photosynthesis?', options: ['Geothermal Heat', 'Sunlight', 'Wind', 'Water'], correctAnswer: 'Sunlight' },
     ],
     timer: 10,
   },
@@ -36,10 +36,10 @@ export const mockQuizzes: Quiz[] = [
     title: 'World War II Key Events',
     subject: 'History',
     skillLevel: 'Intermediate',
-    createdBy: 'teacher1',
+    createdBy: '2',
     questions: [
-      { id: 'q1', text: 'In which year did World War II begin?', options: ['1938', '1939', '1940', '1941'], correctAnswer: '1939' },
-      { id: 'q2', text: 'The D-Day landings took place in which region of France?', options: ['Brittany', 'Alsace', 'Normandy', 'Provence'], correctAnswer: 'Normandy' },
+      { id: '301', text: 'In which year did World War II begin?', options: ['1938', '1939', '1940', '1941'], correctAnswer: '1939' },
+      { id: '302', text: 'The D-Day landings took place in which region of France?', options: ['Brittany', 'Alsace', 'Normandy', 'Provence'], correctAnswer: 'Normandy' },
     ],
   },
   {
@@ -47,9 +47,9 @@ export const mockQuizzes: Quiz[] = [
     title: 'Advanced Calculus',
     subject: 'Math',
     skillLevel: 'Advanced',
-    createdBy: 'teacher1',
+    createdBy: '2',
     questions: [
-      { id: 'q1', text: 'What is the derivative of x^2?', options: ['x', '2x', 'x^3', '2'], correctAnswer: '2x' },
+      { id: '401', text: 'What is the derivative of x^2?', options: ['x', '2x', 'x^3', '2'], correctAnswer: '2x' },
     ],
   },
 ];
@@ -58,18 +58,18 @@ export const mockQuizAttempts: QuizAttempt[] = [];
 
 export const mockClassrooms: Classroom[] = [
     {
-        id: 'cls-1',
+        id: '1',
         name: 'Grade 10 Math',
         subject: 'Mathematics',
-        createdBy: 'teacher1',
+        createdBy: '2',
         joinCode: 'MTH101',
         studentIds: [],
     },
     {
-        id: 'cls-2',
+        id: '2',
         name: 'Intro to Biology',
         subject: 'Science',
-        createdBy: 'teacher1',
+        createdBy: '2',
         joinCode: 'SCI101',
         studentIds: [],
     }

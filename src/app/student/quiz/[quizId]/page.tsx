@@ -48,8 +48,12 @@ export default function QuizPage() {
     });
     const finalScore = (score / quiz.questions.length) * 100;
 
+    const allAttempts = getQuizAttemptsFromStorage();
+    const existingIds = allAttempts.map(a => parseInt(a.id, 10)).filter(id => !isNaN(id));
+    const newAttemptId = (Math.max(0, ...existingIds) + 1).toString();
+
     const newAttempt: QuizAttempt = {
-      id: crypto.randomUUID(),
+      id: newAttemptId,
       quizId: quiz.id,
       studentId: user.id,
       answers: answers,
@@ -57,7 +61,7 @@ export default function QuizPage() {
       submittedAt: new Date(),
     };
 
-    const allAttempts = getQuizAttemptsFromStorage();
+    
     setQuizAttemptsToStorage([...allAttempts, newAttempt]);
     
     router.push(`/student/quiz/${quizId}/results`);
@@ -118,7 +122,7 @@ export default function QuizPage() {
 
   const goToPrevious = () => {
     if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex(prev => prev + 1);
+      setCurrentQuestionIndex(prev => prev - 1);
     }
   };
 

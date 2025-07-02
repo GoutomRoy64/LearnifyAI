@@ -141,8 +141,11 @@ function ClassroomsTab({ user }: { user: User }) {
     const handleJoinRequest = (classroomId: string) => {
         const allRequests = getJoinRequestsFromStorage();
 
+        const existingIds = allRequests.map(r => parseInt(r.id, 10)).filter(id => !isNaN(id));
+        const newRequestId = (Math.max(0, ...existingIds) + 1).toString();
+
         const newRequest: JoinRequest = {
-            id: crypto.randomUUID(),
+            id: newRequestId,
             classroomId: classroomId,
             studentId: user.id,
             status: 'pending',

@@ -79,11 +79,17 @@ export function QuizForm({ initialData }: QuizFormProps) {
       setQuizzesToStorage(updatedQuizzes);
     } else {
       // Creating new quiz
+      const allQuestionIds = allQuizzes.flatMap(q => q.questions).map(q => parseInt(q.id, 10)).filter(id => !isNaN(id));
+      let nextQuestionId = Math.max(0, ...allQuestionIds) + 1;
+      
+      const allQuizIds = allQuizzes.map(q => parseInt(q.id, 10)).filter(id => !isNaN(id));
+      const newQuizId = (Math.max(0, ...allQuizIds) + 1).toString();
+
       const newQuiz: Quiz = {
         ...quizData,
-        id: crypto.randomUUID(),
+        id: newQuizId,
         createdBy: user.id,
-        questions: data.questions.map((q) => ({ ...q, id: crypto.randomUUID() })),
+        questions: data.questions.map((q) => ({ ...q, id: (nextQuestionId++).toString() })),
       };
       setQuizzesToStorage([...allQuizzes, newQuiz]);
     }

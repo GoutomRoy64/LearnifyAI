@@ -58,7 +58,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (users.some(u => u.email === data.email)) {
         return { success: false, message: 'An account with this email already exists.' };
     }
-    const newUser: User = { ...data, id: crypto.randomUUID() };
+
+    const existingIds = users.map(u => parseInt(u.id, 10)).filter(id => !isNaN(id));
+    const newId = (Math.max(0, ...existingIds) + 1).toString();
+
+    const newUser: User = { ...data, id: newId };
     const updatedUsers = [...users, newUser];
     setUsersToStorage(updatedUsers);
     return { success: true };
