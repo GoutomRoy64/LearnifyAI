@@ -24,11 +24,6 @@ const classroomSchema = z.object({
 
 type ClassroomFormValues = z.infer<typeof classroomSchema>;
 
-// Helper to generate a random code
-const generateJoinCode = () => {
-    return Math.random().toString(36).substring(2, 8).toUpperCase();
-};
-
 export default function CreateClassroomPage() {
     const { user } = useAuth();
     const router = useRouter();
@@ -52,7 +47,6 @@ export default function CreateClassroomPage() {
         const newClassroom: Classroom = {
             id: newClassroomId,
             createdBy: user.id,
-            joinCode: generateJoinCode(),
             studentIds: [],
             posts: [],
             ...data

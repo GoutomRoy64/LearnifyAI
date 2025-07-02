@@ -65,7 +65,6 @@ export const mockClassrooms: Classroom[] = [
         name: 'Grade 10 Math',
         subject: 'Mathematics',
         createdBy: '2',
-        joinCode: 'MTH101',
         studentIds: ['1'],
         posts: [
             { id: '1', content: 'Welcome to Grade 10 Math! Your first assignment is to complete the "Algebra Basics" quiz by Friday.', authorName: 'Dr. Evelyn Reed', createdAt: new Date() }
@@ -76,7 +75,6 @@ export const mockClassrooms: Classroom[] = [
         name: 'Intro to Biology',
         subject: 'Science',
         createdBy: '2',
-        joinCode: 'SCI101',
         studentIds: [],
         posts: [],
     }

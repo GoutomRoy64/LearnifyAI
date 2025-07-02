@@ -15,7 +15,6 @@ import type { Classroom, JoinRequest, User } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { PlusCircle, Users, Mail, Check, X, Eye } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 
 export default function TeacherClassroomsPage() {
@@ -95,10 +94,6 @@ export default function TeacherClassroomsPage() {
                                 <CardHeader>
                                     <CardTitle>{c.name}</CardTitle>
                                     <CardDescription>{c.subject}</CardDescription>
-                                    <div className="pt-2">
-                                        <p className="text-xs text-muted-foreground">Join Code</p>
-                                        <Badge variant="secondary">{c.joinCode}</Badge>
-                                    </div>
                                 </CardHeader>
                                 <CardContent className="flex-grow space-y-4">
                                     <div className="flex items-center text-sm text-muted-foreground">

@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -20,7 +19,6 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ArrowLeft, Users, PlusCircle, BarChart2, CalendarClock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format, formatDistanceToNow } from "date-fns";
-import { Badge } from "@/components/ui/badge";
 
 export default function TeacherClassroomDetailPage() {
   const params = useParams();
@@ -109,7 +107,6 @@ export default function TeacherClassroomDetailPage() {
       <header className="mb-8">
         <h1 className="font-headline text-4xl font-bold">{classroom.name}</h1>
         <p className="text-lg text-muted-foreground">{classroom.subject}</p>
-        <p className="text-sm text-muted-foreground mt-1">Join Code: <Badge variant="secondary">{classroom.joinCode}</Badge></p>
       </header>
       
       <div className="grid md:grid-cols-3 gap-8 items-start">

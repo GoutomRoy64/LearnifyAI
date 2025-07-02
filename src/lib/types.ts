@@ -46,7 +46,6 @@ export interface Classroom {
   name: string;
   subject: string;
   createdBy: string; // teacherId
-  joinCode: string;
   studentIds: string[];
   posts: Post[];
 }
