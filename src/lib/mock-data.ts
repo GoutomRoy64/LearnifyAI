@@ -3,12 +3,13 @@ import type { Quiz, User, QuizAttempt, Classroom, JoinRequest } from '@/lib/type
 export const mockUsers: User[] = [
   { id: '1', email: 'student@example.com', role: 'student', name: 'Alex Doe', password: 'password' },
   { id: '2', email: 'teacher@example.com', role: 'teacher', name: 'Dr. Evelyn Reed', password: 'password' },
+  { id: '3', email: 'student2@example.com', role: 'student', name: 'Sam Wilson', password: 'password' },
 ];
 
 export const mockQuizzes: Quiz[] = [
   {
     id: '1',
-    title: 'Algebra Basics',
+    title: 'Algebra Basics (Classroom)',
     subject: 'Math',
     skillLevel: 'Beginner',
     createdBy: '2',
@@ -17,6 +18,7 @@ export const mockQuizzes: Quiz[] = [
       { id: '102', text: 'What is x in x + 5 = 10?', options: ['3', '4', '5', '6'], correctAnswer: '5' },
     ],
     timer: 5,
+    classroomId: '1',
   },
   {
     id: '2',
@@ -63,7 +65,10 @@ export const mockClassrooms: Classroom[] = [
         subject: 'Mathematics',
         createdBy: '2',
         joinCode: 'MTH101',
-        studentIds: [],
+        studentIds: ['1'],
+        posts: [
+            { id: '1', content: 'Welcome to Grade 10 Math! Your first assignment is to complete the "Algebra Basics" quiz by Friday.', authorName: 'Dr. Evelyn Reed', createdAt: new Date() }
+        ]
     },
     {
         id: '2',
@@ -72,10 +77,14 @@ export const mockClassrooms: Classroom[] = [
         createdBy: '2',
         joinCode: 'SCI101',
         studentIds: [],
+        posts: [],
     }
 ];
 
-export const mockJoinRequests: JoinRequest[] = [];
+export const mockJoinRequests: JoinRequest[] = [
+    { id: '1', classroomId: '1', studentId: '1', status: 'approved', requestedAt: new Date() },
+    { id: '2', classroomId: '2', studentId: '3', status: 'pending', requestedAt: new Date() },
+];
 
 
 // User Data Functions
@@ -153,7 +162,10 @@ export const getClassroomsFromStorage = (): Classroom[] => {
     try {
         const storedClassrooms = localStorage.getItem('classrooms');
         if (storedClassrooms) {
-            return JSON.parse(storedClassrooms);
+             return JSON.parse(storedClassrooms).map((classroom: Classroom) => ({
+                ...classroom,
+                posts: classroom.posts.map(post => ({ ...post, createdAt: new Date(post.createdAt) }))
+            }));
         } else {
             localStorage.setItem('classrooms', JSON.stringify(mockClassrooms));
             return mockClassrooms;

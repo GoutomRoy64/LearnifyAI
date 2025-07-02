@@ -16,16 +16,21 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
+import { Eye } from "lucide-react";
 
-function QuizzesTab({ quizzes, attempts }: { quizzes: Quiz[], attempts: QuizAttempt[] }) {
+function QuizzesTab({ quizzes, attempts, myClassroomIds }: { quizzes: Quiz[], attempts: QuizAttempt[], myClassroomIds: string[] }) {
     const [search, setSearch] = useState("");
     const [subject, setSubject] = useState("all");
     const [skillLevel, setSkillLevel] = useState("all");
 
-    const subjects = ["all", ...Array.from(new Set(quizzes.map(q => q.subject)))];
+    const availableQuizzes = quizzes.filter(quiz => 
+      !quiz.classroomId || myClassroomIds.includes(quiz.classroomId)
+    );
+
+    const subjects = ["all", ...Array.from(new Set(availableQuizzes.map(q => q.subject)))];
     const skillLevels = ["all", "Beginner", "Intermediate", "Advanced"];
 
-    const filteredQuizzes = quizzes.filter(quiz => {
+    const filteredQuizzes = availableQuizzes.filter(quiz => {
         return (
             quiz.title.toLowerCase().includes(search.toLowerCase()) &&
             (subject === "all" || quiz.subject === subject) &&
@@ -181,16 +186,26 @@ function ClassroomsTab({ user }: { user: User }) {
                     <CardHeader><CardTitle>My Classrooms</CardTitle></CardHeader>
                     <CardContent>
                         {myClassrooms.length > 0 ? (
-                            <ul className="space-y-3">
+                            <div className="space-y-4">
                                 {myClassrooms.map(c => (
-                                    <li key={c.id} className="p-4 border rounded-md flex justify-between items-center">
-                                        <div>
-                                            <p className="font-semibold">{c.name}</p>
-                                            <p className="text-sm text-muted-foreground">{c.subject} - Taught by {getTeacherName(c.createdBy)}</p>
-                                        </div>
-                                    </li>
+                                    <Card key={c.id}>
+                                      <CardHeader>
+                                        <CardTitle>{c.name}</CardTitle>
+                                        <CardDescription>{c.subject} - Taught by {getTeacherName(c.createdBy)}</CardDescription>
+                                      </CardHeader>
+                                      <CardContent>
+                                        <p className="text-sm text-muted-foreground">{c.studentIds.length} student(s)</p>
+                                      </CardContent>
+                                      <CardContent>
+                                         <Button asChild className="w-full">
+                                           <Link href={`/student/classrooms/${c.id}`}>
+                                              <Eye className="mr-2 h-4 w-4" /> View Classroom
+                                           </Link>
+                                         </Button>
+                                      </CardContent>
+                                    </Card>
                                 ))}
-                            </ul>
+                            </div>
                         ) : <p className="text-muted-foreground">You haven't joined any classrooms yet.</p>}
                     </CardContent>
                 </Card>
@@ -251,6 +266,7 @@ export default function StudentDashboard() {
   const { user } = useAuth();
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [attempts, setAttempts] = useState<QuizAttempt[]>([]);
+  const [myClassroomIds, setMyClassroomIds] = useState<string[]>([]);
 
   useEffect(() => {
     const allQuizzes = getQuizzesFromStorage();
@@ -261,6 +277,12 @@ export default function StudentDashboard() {
         .filter(a => a.studentId === user.id)
         .sort((a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime());
       setAttempts(userAttempts);
+
+      const allRequests = getJoinRequestsFromStorage();
+      const approvedClassroomIds = allRequests
+        .filter(r => r.studentId === user.id && r.status === 'approved')
+        .map(r => r.classroomId);
+      setMyClassroomIds(approvedClassroomIds);
     }
   }, [user]);
 
@@ -280,7 +302,7 @@ export default function StudentDashboard() {
           <TabsTrigger value="classrooms">Classrooms</TabsTrigger>
         </TabsList>
         <TabsContent value="quizzes" className="mt-8">
-            <QuizzesTab quizzes={quizzes} attempts={attempts}/>
+            <QuizzesTab quizzes={quizzes} attempts={attempts} myClassroomIds={myClassroomIds} />
         </TabsContent>
         <TabsContent value="classrooms" className="mt-8">
             <ClassroomsTab user={user} />

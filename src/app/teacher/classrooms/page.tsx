@@ -13,8 +13,8 @@ import {
 import type { Classroom, JoinRequest, User } from "@/lib/types";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { PlusCircle, Users, Mail, Check, X } from "lucide-react";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { PlusCircle, Users, Mail, Check, X, Eye } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 
@@ -101,13 +101,10 @@ export default function TeacherClassroomsPage() {
                                     </div>
                                 </CardHeader>
                                 <CardContent className="flex-grow space-y-4">
-                                     <div>
-                                        <h4 className="font-semibold text-sm flex items-center gap-2 mb-2"><Users className="h-4 w-4" /> Members ({memberCount})</h4>
-                                        <div className="text-sm text-muted-foreground">
-                                            {c.studentIds.length > 0 ? c.studentIds.map(sid => getStudentName(sid)).join(', ') : 'No students yet.'}
-                                        </div>
+                                    <div className="flex items-center text-sm text-muted-foreground">
+                                        <Users className="h-4 w-4 mr-2" /> {memberCount} student(s)
                                     </div>
-                                    <div>
+                                     <div>
                                         <h4 className="font-semibold text-sm flex items-center gap-2 mb-2"><Mail className="h-4 w-4" /> Join Requests ({pendingRequests.length})</h4>
                                         {pendingRequests.length > 0 ? (
                                             <ul className="space-y-2">
@@ -128,6 +125,13 @@ export default function TeacherClassroomsPage() {
                                         ) : <p className="text-sm text-muted-foreground">No pending requests.</p>}
                                     </div>
                                 </CardContent>
+                                <CardFooter>
+                                    <Button asChild className="w-full">
+                                        <Link href={`/teacher/classrooms/${c.id}`}>
+                                            <Eye className="mr-2 h-4 w-4" /> View Classroom
+                                        </Link>
+                                    </Button>
+                                </CardFooter>
                             </Card>
                         )
                     })}

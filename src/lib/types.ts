@@ -1,3 +1,10 @@
+export interface Post {
+  id: string;
+  content: string;
+  createdAt: Date;
+  authorName: string;
+}
+
 export interface Question {
   id: string;
   text: string;
@@ -13,6 +20,7 @@ export interface Quiz {
   createdBy: string; // teacherId
   questions: Question[];
   timer?: number; // Duration in minutes
+  classroomId?: string;
 }
 
 export interface User {
@@ -39,6 +47,7 @@ export interface Classroom {
   createdBy: string; // teacherId
   joinCode: string;
   studentIds: string[];
+  posts: Post[];
 }
 
 export interface JoinRequest {

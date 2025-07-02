@@ -3,7 +3,7 @@
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import type { Quiz } from '@/lib/types';
+import type { Quiz, Classroom } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -14,7 +14,8 @@ import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 import { useAuth } from '@/hooks/use-auth';
-import { getQuizzesFromStorage, setQuizzesToStorage } from '@/lib/mock-data';
+import { getQuizzesFromStorage, setQuizzesToStorage, getClassroomsFromStorage } from '@/lib/mock-data';
+import { useEffect, useState } from 'react';
 
 const questionSchema = z.object({
   id: z.string().optional(),
@@ -29,30 +30,36 @@ const quizSchema = z.object({
   skillLevel: z.enum(['Beginner', 'Intermediate', 'Advanced']),
   questions: z.array(questionSchema).min(1, 'At least one question is required.'),
   timer: z.coerce.number().min(0, "Timer can't be negative.").optional(),
+  classroomId: z.string().optional(),
 });
 
 type QuizFormValues = z.infer<typeof quizSchema>;
 
 interface QuizFormProps {
   initialData?: Quiz;
+  classroomId?: string;
 }
 
-export function QuizForm({ initialData }: QuizFormProps) {
+export function QuizForm({ initialData, classroomId: classroomIdFromUrl }: QuizFormProps) {
   const router = useRouter();
   const { toast } = useToast();
   const { user } = useAuth();
+  const [classrooms, setClassrooms] = useState<Classroom[]>([]);
+
   const { register, control, handleSubmit, formState: { errors }, watch } = useForm<QuizFormValues>({
     resolver: zodResolver(quizSchema),
     defaultValues: initialData ? {
         ...initialData,
         timer: initialData.timer || undefined,
-        questions: initialData.questions.map(q => ({...q, options: [...q.options]}))
+        questions: initialData.questions.map(q => ({...q, options: [...q.options]})),
+        classroomId: initialData.classroomId || "",
     } : {
       title: '',
       subject: '',
       skillLevel: 'Beginner',
       questions: [{ text: '', options: ['', ''], correctAnswer: '' }],
       timer: undefined,
+      classroomId: classroomIdFromUrl || "",
     },
   });
 
@@ -60,6 +67,14 @@ export function QuizForm({ initialData }: QuizFormProps) {
     control,
     name: 'questions',
   });
+
+  useEffect(() => {
+    if (user) {
+        const allClassrooms = getClassroomsFromStorage();
+        const myClassrooms = allClassrooms.filter(c => c.createdBy === user.id);
+        setClassrooms(myClassrooms);
+    }
+  }, [user]);
   
   const onSubmit = (data: QuizFormValues) => {
     if (!user) {
@@ -71,6 +86,7 @@ export function QuizForm({ initialData }: QuizFormProps) {
     const quizData = {
         ...data,
         timer: data.timer && data.timer > 0 ? data.timer : undefined,
+        classroomId: data.classroomId || undefined,
     }
 
     if (initialData) {
@@ -142,6 +158,27 @@ export function QuizForm({ initialData }: QuizFormProps) {
              <Input id="timer" type="number" {...register('timer')} placeholder="e.g., 10" />
              <p className="text-sm text-muted-foreground">Leave blank or 0 for no time limit.</p>
              {errors.timer && <p className="text-sm text-destructive">{errors.timer.message}</p>}
+          </div>
+           <div className="space-y-2 md:col-span-2">
+            <Label>Classroom (Optional)</Label>
+            <Controller
+                control={control}
+                name="classroomId"
+                render={({ field }) => (
+                    <Select onValueChange={field.onChange} value={field.value} disabled={!!classroomIdFromUrl}>
+                        <SelectTrigger>
+                            <SelectValue placeholder="Assign to a classroom" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="">Public (No classroom)</SelectItem>
+                            {classrooms.map(c => (
+                                <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                )}
+            />
+             <p className="text-sm text-muted-foreground">If assigned, this quiz will only be visible to students in that classroom.</p>
           </div>
         </CardContent>
       </Card>
