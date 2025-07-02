@@ -164,7 +164,7 @@ export const getClassroomsFromStorage = (): Classroom[] => {
         if (storedClassrooms) {
              return JSON.parse(storedClassrooms).map((classroom: Classroom) => ({
                 ...classroom,
-                posts: classroom.posts.map(post => ({ ...post, createdAt: new Date(post.createdAt) }))
+                posts: (classroom.posts || []).map(post => ({ ...post, createdAt: new Date(post.createdAt) }))
             }));
         } else {
             localStorage.setItem('classrooms', JSON.stringify(mockClassrooms));

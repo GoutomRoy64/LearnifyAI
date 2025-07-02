@@ -54,6 +54,7 @@ export default function CreateClassroomPage() {
             createdBy: user.id,
             joinCode: generateJoinCode(),
             studentIds: [],
+            posts: [],
             ...data
         };
         
