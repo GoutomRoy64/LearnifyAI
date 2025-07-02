@@ -52,14 +52,14 @@ export function QuizForm({ initialData, classroomId: classroomIdFromUrl }: QuizF
         ...initialData,
         timer: initialData.timer || undefined,
         questions: initialData.questions.map(q => ({...q, options: [...q.options]})),
-        classroomId: initialData.classroomId || "",
+        classroomId: initialData.classroomId || "public",
     } : {
       title: '',
       subject: '',
       skillLevel: 'Beginner',
       questions: [{ text: '', options: ['', ''], correctAnswer: '' }],
       timer: undefined,
-      classroomId: classroomIdFromUrl || "",
+      classroomId: classroomIdFromUrl || "public",
     },
   });
 
@@ -86,7 +86,7 @@ export function QuizForm({ initialData, classroomId: classroomIdFromUrl }: QuizF
     const quizData = {
         ...data,
         timer: data.timer && data.timer > 0 ? data.timer : undefined,
-        classroomId: data.classroomId || undefined,
+        classroomId: data.classroomId === 'public' ? undefined : data.classroomId,
     }
 
     if (initialData) {
@@ -170,7 +170,7 @@ export function QuizForm({ initialData, classroomId: classroomIdFromUrl }: QuizF
                             <SelectValue placeholder="Assign to a classroom" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="">Public (No classroom)</SelectItem>
+                            <SelectItem value="public">Public (No classroom)</SelectItem>
                             {classrooms.map(c => (
                                 <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
                             ))}
