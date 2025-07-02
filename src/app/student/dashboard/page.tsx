@@ -1,13 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getQuizzesFromStorage, getQuizAttemptsFromStorage, getClassroomsFromStorage, getJoinRequestsFromStorage, setJoinRequestsToStorage } from "@/lib/mock-data";
+import { getQuizzesFromStorage, getQuizAttemptsFromStorage, getClassroomsFromStorage, getJoinRequestsFromStorage, setJoinRequestsToStorage, getUsersFromStorage } from "@/lib/mock-data";
 import { QuizCard } from "@/components/quiz-card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/use-auth";
-import type { Quiz, QuizAttempt, Classroom, JoinRequest } from "@/lib/types";
+import type { Quiz, QuizAttempt, Classroom, JoinRequest, User } from "@/lib/types";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -112,50 +112,38 @@ function QuizzesTab({ quizzes, attempts }: { quizzes: Quiz[], attempts: QuizAtte
     )
 }
 
-function ClassroomsTab({ user }) {
-    const [joinCode, setJoinCode] = useState('');
+function ClassroomsTab({ user }: { user: User }) {
     const { toast } = useToast();
-    const [classrooms, setClassrooms] = useState<Classroom[]>([]);
+    const [allClassrooms, setAllClassrooms] = useState<Classroom[]>([]);
+    const [myClassrooms, setMyClassrooms] = useState<Classroom[]>([]);
+    const [availableClassrooms, setAvailableClassrooms] = useState<Classroom[]>([]);
     const [requests, setRequests] = useState<JoinRequest[]>([]);
-    
+    const [teachers, setTeachers] = useState<User[]>([]);
+
     useEffect(() => {
-        const allClassrooms = getClassroomsFromStorage();
+        const classrooms = getClassroomsFromStorage();
         const allRequests = getJoinRequestsFromStorage();
+        const allUsers = getUsersFromStorage();
+
+        setTeachers(allUsers.filter(u => u.role === 'teacher'));
 
         const myRequests = allRequests.filter(r => r.studentId === user.id);
         setRequests(myRequests);
         
         const myClassroomIds = myRequests.filter(r => r.status === 'approved').map(r => r.classroomId);
-        const myClassrooms = allClassrooms.filter(c => myClassroomIds.includes(c.id));
-        setClassrooms(myClassrooms);
+        const myRequestedClassroomIds = myRequests.map(r => r.classroomId);
+
+        setAllClassrooms(classrooms);
+        setMyClassrooms(classrooms.filter(c => myClassroomIds.includes(c.id)));
+        setAvailableClassrooms(classrooms.filter(c => !myRequestedClassroomIds.includes(c.id)));
     }, [user.id]);
 
-    const handleJoinRequest = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!joinCode.trim()) {
-            toast({ variant: 'destructive', title: 'Error', description: 'Please enter a join code.' });
-            return;
-        }
-
-        const allClassrooms = getClassroomsFromStorage();
-        const targetClassroom = allClassrooms.find(c => c.joinCode === joinCode.trim());
-
-        if (!targetClassroom) {
-            toast({ variant: 'destructive', title: 'Error', description: 'Classroom not found.' });
-            return;
-        }
-
+    const handleJoinRequest = (classroomId: string) => {
         const allRequests = getJoinRequestsFromStorage();
-        const existingRequest = allRequests.find(r => r.studentId === user.id && r.classroomId === targetClassroom.id);
-
-        if (existingRequest) {
-            toast({ title: 'Request already sent', description: 'You have already requested to join this classroom.' });
-            return;
-        }
 
         const newRequest: JoinRequest = {
             id: `req-${Date.now()}`,
-            classroomId: targetClassroom.id,
+            classroomId: classroomId,
             studentId: user.id,
             status: 'pending',
             requestedAt: new Date(),
@@ -163,7 +151,7 @@ function ClassroomsTab({ user }) {
 
         setJoinRequestsToStorage([...allRequests, newRequest]);
         setRequests(prev => [...prev, newRequest]);
-        setJoinCode('');
+        setAvailableClassrooms(prev => prev.filter(c => c.id !== classroomId));
         toast({ title: 'Success!', description: 'Your request to join the classroom has been sent.' });
     }
     
@@ -178,22 +166,24 @@ function ClassroomsTab({ user }) {
     
     const requestedClassrooms = requests.map(r => ({
         ...r,
-        classroomName: getClassroomsFromStorage().find(c => c.id === r.classroomId)?.name || 'Unknown Classroom'
+        classroomName: allClassrooms.find(c => c.id === r.classroomId)?.name || 'Unknown Classroom'
     }));
 
+    const getTeacherName = (teacherId: string) => teachers.find(t => t.id === teacherId)?.name || 'Unknown Teacher';
+
     return (
-        <div className="grid md:grid-cols-3 gap-8">
-            <div className="md:col-span-2 space-y-8">
+        <div className="grid lg:grid-cols-2 gap-8">
+            <div className="space-y-8">
                  <Card>
                     <CardHeader><CardTitle>My Classrooms</CardTitle></CardHeader>
                     <CardContent>
-                        {classrooms.length > 0 ? (
+                        {myClassrooms.length > 0 ? (
                             <ul className="space-y-3">
-                                {classrooms.map(c => (
+                                {myClassrooms.map(c => (
                                     <li key={c.id} className="p-4 border rounded-md flex justify-between items-center">
                                         <div>
                                             <p className="font-semibold">{c.name}</p>
-                                            <p className="text-sm text-muted-foreground">{c.subject}</p>
+                                            <p className="text-sm text-muted-foreground">{c.subject} - Taught by {getTeacherName(c.createdBy)}</p>
                                         </div>
                                     </li>
                                 ))}
@@ -230,17 +220,23 @@ function ClassroomsTab({ user }) {
             <div>
                  <Card>
                     <CardHeader>
-                        <CardTitle>Join a Classroom</CardTitle>
-                        <CardDescription>Enter the join code provided by your teacher.</CardDescription>
+                        <CardTitle>Available Classrooms</CardTitle>
+                        <CardDescription>Browse and request to join classrooms.</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <form onSubmit={handleJoinRequest} className="space-y-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="join-code">Join Code</Label>
-                                <Input id="join-code" value={joinCode} onChange={(e) => setJoinCode(e.target.value)} />
-                            </div>
-                            <Button type="submit" className="w-full">Send Join Request</Button>
-                        </form>
+                        {availableClassrooms.length > 0 ? (
+                            <ul className="space-y-3">
+                                {availableClassrooms.map(c => (
+                                    <li key={c.id} className="p-4 border rounded-md flex justify-between items-center">
+                                        <div>
+                                            <p className="font-semibold">{c.name}</p>
+                                            <p className="text-sm text-muted-foreground">{c.subject} - Taught by {getTeacherName(c.createdBy)}</p>
+                                        </div>
+                                        <Button size="sm" onClick={() => handleJoinRequest(c.id)}>Request to Join</Button>
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : <p className="text-muted-foreground">No other classrooms available to join.</p>}
                     </CardContent>
                 </Card>
             </div>

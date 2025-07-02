@@ -56,7 +56,24 @@ export const mockQuizzes: Quiz[] = [
 
 export const mockQuizAttempts: QuizAttempt[] = [];
 
-export const mockClassrooms: Classroom[] = [];
+export const mockClassrooms: Classroom[] = [
+    {
+        id: 'cls-1',
+        name: 'Grade 10 Math',
+        subject: 'Mathematics',
+        createdBy: 'teacher1',
+        joinCode: 'MTH101',
+        studentIds: [],
+    },
+    {
+        id: 'cls-2',
+        name: 'Intro to Biology',
+        subject: 'Science',
+        createdBy: 'teacher1',
+        joinCode: 'SCI101',
+        studentIds: [],
+    }
+];
 
 export const mockJoinRequests: JoinRequest[] = [];
 
