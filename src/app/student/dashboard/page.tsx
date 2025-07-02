@@ -18,14 +18,12 @@ import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { Eye } from "lucide-react";
 
-function QuizzesTab({ quizzes, attempts, myClassroomIds }: { quizzes: Quiz[], attempts: QuizAttempt[], myClassroomIds: string[] }) {
+function QuizzesTab({ quizzes, attempts }: { quizzes: Quiz[], attempts: QuizAttempt[] }) {
     const [search, setSearch] = useState("");
     const [subject, setSubject] = useState("all");
     const [skillLevel, setSkillLevel] = useState("all");
 
-    const availableQuizzes = quizzes.filter(quiz => 
-      !quiz.classroomId || myClassroomIds.includes(quiz.classroomId)
-    );
+    const availableQuizzes = quizzes.filter(quiz => !quiz.classroomId);
 
     const subjects = ["all", ...Array.from(new Set(availableQuizzes.map(q => q.subject)))];
     const skillLevels = ["all", "Beginner", "Intermediate", "Advanced"];
@@ -67,15 +65,15 @@ function QuizzesTab({ quizzes, attempts, myClassroomIds }: { quizzes: Quiz[], at
                 </div>
             </div>
 
-            <h2 className="font-headline text-2xl font-bold mt-12 mb-6">Available Quizzes</h2>
+            <h2 className="font-headline text-2xl font-bold mt-12 mb-6">Available Public Quizzes</h2>
             {filteredQuizzes.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     {filteredQuizzes.map(quiz => <QuizCard key={quiz.id} quiz={quiz} />)}
                 </div>
             ) : (
                 <div className="text-center py-16 border-2 border-dashed rounded-lg">
-                    <h3 className="font-headline text-xl">No Quizzes Found</h3>
-                    <p className="text-muted-foreground mt-2">Try adjusting your search or filter criteria.</p>
+                    <h3 className="font-headline text-xl">No Public Quizzes Found</h3>
+                    <p className="text-muted-foreground mt-2">Check your classrooms for class-specific quizzes.</p>
                 </div>
             )}
 
@@ -135,13 +133,13 @@ function ClassroomsTab({ user }: { user: User }) {
         const myRequests = allRequests.filter(r => r.studentId === user.id);
         setRequests(myRequests);
         
-        const myClassroomIds = myRequests.filter(r => r.status === 'approved').map(r => r.classroomId);
+        const myClassroomIds = classrooms.filter(c => c.studentIds.includes(user.id)).map(c => c.id);
         const myRequestedClassroomIds = myRequests.map(r => r.classroomId);
 
         setAllClassrooms(classrooms);
         setMyClassrooms(classrooms.filter(c => myClassroomIds.includes(c.id)));
-        setAvailableClassrooms(classrooms.filter(c => !myRequestedClassroomIds.includes(c.id)));
-    }, [user.id]);
+        setAvailableClassrooms(classrooms.filter(c => !myClassroomIds.includes(c.id) && !myRequestedClassroomIds.includes(c.id)));
+    }, [user.id, requests]);
 
     const handleJoinRequest = (classroomId: string) => {
         const allRequests = getJoinRequestsFromStorage();
@@ -266,7 +264,6 @@ export default function StudentDashboard() {
   const { user } = useAuth();
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [attempts, setAttempts] = useState<QuizAttempt[]>([]);
-  const [myClassroomIds, setMyClassroomIds] = useState<string[]>([]);
 
   useEffect(() => {
     const allQuizzes = getQuizzesFromStorage();
@@ -277,12 +274,6 @@ export default function StudentDashboard() {
         .filter(a => a.studentId === user.id)
         .sort((a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime());
       setAttempts(userAttempts);
-
-      const allRequests = getJoinRequestsFromStorage();
-      const approvedClassroomIds = allRequests
-        .filter(r => r.studentId === user.id && r.status === 'approved')
-        .map(r => r.classroomId);
-      setMyClassroomIds(approvedClassroomIds);
     }
   }, [user]);
 
@@ -302,7 +293,7 @@ export default function StudentDashboard() {
           <TabsTrigger value="classrooms">Classrooms</TabsTrigger>
         </TabsList>
         <TabsContent value="quizzes" className="mt-8">
-            <QuizzesTab quizzes={quizzes} attempts={attempts} myClassroomIds={myClassroomIds} />
+            <QuizzesTab quizzes={quizzes} attempts={attempts} />
         </TabsContent>
         <TabsContent value="classrooms" className="mt-8">
             <ClassroomsTab user={user} />

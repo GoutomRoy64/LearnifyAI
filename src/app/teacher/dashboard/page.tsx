@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
-import { getQuizzesFromStorage, setQuizzesToStorage, getQuizAttemptsFromStorage } from "@/lib/mock-data";
+import { getQuizzesFromStorage, setQuizzesToStorage, getQuizAttemptsFromStorage, getClassroomsFromStorage } from "@/lib/mock-data";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -11,7 +11,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { MoreHorizontal, PlusCircle, Edit, Trash2, BarChart2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import type { Quiz, QuizAttempt } from "@/lib/types";
+import type { Quiz, QuizAttempt, Classroom } from "@/lib/types";
 
 export default function TeacherDashboard() {
   const { user } = useAuth();
@@ -19,6 +19,7 @@ export default function TeacherDashboard() {
   
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [quizAttempts, setQuizAttempts] = useState<QuizAttempt[]>([]);
+  const [classrooms, setClassrooms] = useState<Classroom[]>([]);
 
   useEffect(() => {
     const allAttempts = getQuizAttemptsFromStorage();
@@ -26,6 +27,8 @@ export default function TeacherDashboard() {
     if (user) {
       const allQuizzes = getQuizzesFromStorage();
       setQuizzes(allQuizzes.filter(q => q.createdBy === user.id));
+      const allClassrooms = getClassroomsFromStorage();
+      setClassrooms(allClassrooms.filter(c => c.createdBy === user.id));
     }
   }, [user]);
 
@@ -39,6 +42,12 @@ export default function TeacherDashboard() {
   const getAttemptCount = (quizId: string) => {
     return quizAttempts.filter(a => a.quizId === quizId).length;
   };
+
+  const getQuizClassroomName = (classroomId?: string) => {
+    if (!classroomId) return 'Public';
+    const classroom = classrooms.find(c => c.id === classroomId);
+    return classroom ? classroom.name : 'Unknown Classroom';
+  }
 
   const skillLevelColors = {
     Beginner: "bg-green-100 text-green-800 border-green-200",
@@ -69,6 +78,7 @@ export default function TeacherDashboard() {
               <TableHead>Title</TableHead>
               <TableHead>Subject</TableHead>
               <TableHead>Skill Level</TableHead>
+              <TableHead>Classroom</TableHead>
               <TableHead>Questions</TableHead>
               <TableHead>Attempts</TableHead>
               <TableHead className="text-right">Actions</TableHead>
@@ -80,6 +90,7 @@ export default function TeacherDashboard() {
                 <TableCell className="font-medium">{quiz.title}</TableCell>
                 <TableCell>{quiz.subject}</TableCell>
                 <TableCell><Badge variant="outline" className={skillLevelColors[quiz.skillLevel]}>{quiz.skillLevel}</Badge></TableCell>
+                <TableCell>{getQuizClassroomName(quiz.classroomId)}</TableCell>
                 <TableCell>{quiz.questions.length}</TableCell>
                 <TableCell>{getAttemptCount(quiz.id)}</TableCell>
                 <TableCell className="text-right">
@@ -120,7 +131,7 @@ export default function TeacherDashboard() {
               </TableRow>
             )) : (
               <TableRow>
-                <TableCell colSpan={6} className="h-24 text-center">
+                <TableCell colSpan={7} className="h-24 text-center">
                   No quizzes created yet.
                 </TableCell>
               </TableRow>
