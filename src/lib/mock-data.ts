@@ -19,6 +19,7 @@ export const mockQuizzes: Quiz[] = [
     ],
     timer: 5,
     classroomId: '1',
+    dueDate: new Date(new Date().setDate(new Date().getDate() + 7)),
   },
   {
     id: '2',
@@ -115,7 +116,10 @@ export const getQuizzesFromStorage = (): Quiz[] => {
     try {
         const storedQuizzes = localStorage.getItem('quizzes');
         if (storedQuizzes) {
-            return JSON.parse(storedQuizzes);
+            return JSON.parse(storedQuizzes).map((quiz: Quiz) => ({
+                ...quiz,
+                dueDate: quiz.dueDate ? new Date(quiz.dueDate) : undefined,
+            }));
         } else {
             localStorage.setItem('quizzes', JSON.stringify(mockQuizzes));
             return mockQuizzes;

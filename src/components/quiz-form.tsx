@@ -9,13 +9,17 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Trash2, PlusCircle } from 'lucide-react';
+import { Trash2, PlusCircle, CalendarIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 import { useAuth } from '@/hooks/use-auth';
 import { getQuizzesFromStorage, setQuizzesToStorage, getClassroomsFromStorage } from '@/lib/mock-data';
 import { useEffect, useState } from 'react';
+import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
+import { Calendar } from './ui/calendar';
+import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 const questionSchema = z.object({
   id: z.string().optional(),
@@ -31,6 +35,7 @@ const quizSchema = z.object({
   questions: z.array(questionSchema).min(1, 'At least one question is required.'),
   timer: z.coerce.number().min(0, "Timer can't be negative.").optional(),
   classroomId: z.string().optional(),
+  dueDate: z.date().optional(),
 });
 
 type QuizFormValues = z.infer<typeof quizSchema>;
@@ -51,6 +56,7 @@ export function QuizForm({ initialData, classroomId: classroomIdFromUrl }: QuizF
     defaultValues: initialData ? {
         ...initialData,
         timer: initialData.timer || undefined,
+        dueDate: initialData.dueDate ? new Date(initialData.dueDate) : undefined,
         questions: initialData.questions.map(q => ({...q, options: [...q.options]})),
         classroomId: initialData.classroomId || "public",
     } : {
@@ -59,6 +65,7 @@ export function QuizForm({ initialData, classroomId: classroomIdFromUrl }: QuizF
       skillLevel: 'Beginner',
       questions: [{ text: '', options: ['', ''], correctAnswer: '' }],
       timer: undefined,
+      dueDate: undefined,
       classroomId: classroomIdFromUrl || "public",
     },
   });
@@ -67,6 +74,8 @@ export function QuizForm({ initialData, classroomId: classroomIdFromUrl }: QuizF
     control,
     name: 'questions',
   });
+  
+  const selectedClassroomId = watch('classroomId');
 
   useEffect(() => {
     if (user) {
@@ -87,6 +96,7 @@ export function QuizForm({ initialData, classroomId: classroomIdFromUrl }: QuizF
         ...data,
         timer: data.timer && data.timer > 0 ? data.timer : undefined,
         classroomId: data.classroomId === 'public' ? undefined : data.classroomId,
+        dueDate: data.classroomId !== 'public' && data.classroomId ? data.dueDate : undefined,
     }
 
     if (initialData) {
@@ -159,13 +169,13 @@ export function QuizForm({ initialData, classroomId: classroomIdFromUrl }: QuizF
              <p className="text-sm text-muted-foreground">Leave blank or 0 for no time limit.</p>
              {errors.timer && <p className="text-sm text-destructive">{errors.timer.message}</p>}
           </div>
-           <div className="space-y-2 md:col-span-2">
+           <div className="space-y-2">
             <Label>Classroom (Optional)</Label>
             <Controller
                 control={control}
                 name="classroomId"
                 render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value} disabled={!!classroomIdFromUrl}>
+                    <Select onValueChange={field.onChange} value={field.value || 'public'} disabled={!!classroomIdFromUrl}>
                         <SelectTrigger>
                             <SelectValue placeholder="Assign to a classroom" />
                         </SelectTrigger>
@@ -180,6 +190,40 @@ export function QuizForm({ initialData, classroomId: classroomIdFromUrl }: QuizF
             />
              <p className="text-sm text-muted-foreground">If assigned, this quiz will only be visible to students in that classroom.</p>
           </div>
+          {selectedClassroomId && selectedClassroomId !== 'public' && (
+            <div className="space-y-2">
+                <Label htmlFor="dueDate">Due Date (Optional)</Label>
+                <Controller
+                    control={control}
+                    name="dueDate"
+                    render={({ field }) => (
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <Button
+                                    variant={"outline"}
+                                    className={cn(
+                                        "w-full justify-start text-left font-normal",
+                                        !field.value && "text-muted-foreground"
+                                    )}
+                                >
+                                    <CalendarIcon className="mr-2 h-4 w-4" />
+                                    {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0">
+                                <Calendar
+                                    mode="single"
+                                    selected={field.value}
+                                    onSelect={field.onChange}
+                                    initialFocus
+                                />
+                            </PopoverContent>
+                        </Popover>
+                    )}
+                />
+                <p className="text-sm text-muted-foreground">The quiz won't be accessible after this date.</p>
+            </div>
+          )}
         </CardContent>
       </Card>
 

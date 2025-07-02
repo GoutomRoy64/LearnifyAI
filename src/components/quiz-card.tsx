@@ -2,8 +2,9 @@ import Link from "next/link";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import type { Quiz } from "@/lib/types";
-import { BookOpen, BarChart, ChevronRight, Clock } from "lucide-react";
+import { BookOpen, BarChart, ChevronRight, Clock, CalendarClock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { format } from "date-fns";
 
 interface QuizCardProps {
   quiz: Quiz;
@@ -15,6 +16,9 @@ export function QuizCard({ quiz }: QuizCardProps) {
     Intermediate: "bg-yellow-100 text-yellow-800 border-yellow-200",
     Advanced: "bg-red-100 text-red-800 border-red-200",
   };
+  
+  const isPastDue = quiz.dueDate && new Date() > new Date(quiz.dueDate);
+
   return (
     <Card className="flex flex-col h-full hover:shadow-lg transition-shadow duration-300">
       <CardHeader>
@@ -38,14 +42,24 @@ export function QuizCard({ quiz }: QuizCardProps) {
             <span>{quiz.timer} minutes</span>
           </div>
         )}
+        {quiz.dueDate && (
+           <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <CalendarClock className="h-4 w-4" />
+            <span>Due by {format(new Date(quiz.dueDate), "PPP")}</span>
+          </div>
+        )}
       </CardContent>
       <CardFooter>
-        <Button asChild className="w-full">
-          <Link href={`/student/quiz/${quiz.id}`}>
-            Start Quiz
-            <ChevronRight className="ml-2 h-4 w-4" />
-          </Link>
-        </Button>
+        {isPastDue ? (
+            <Button className="w-full" disabled>Past Due</Button>
+        ) : (
+            <Button asChild className="w-full">
+              <Link href={`/student/quiz/${quiz.id}`}>
+                Start Quiz
+                <ChevronRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+        )}
       </CardFooter>
     </Card>
   );

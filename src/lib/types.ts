@@ -21,6 +21,7 @@ export interface Quiz {
   questions: Question[];
   timer?: number; // Duration in minutes
   classroomId?: string;
+  dueDate?: Date;
 }
 
 export interface User {

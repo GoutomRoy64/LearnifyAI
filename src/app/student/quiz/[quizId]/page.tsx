@@ -13,6 +13,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import type { Quiz, QuizAttempt } from '@/lib/types';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
+import Link from 'next/link';
 
 
 const formatTime = (seconds: number) => {
@@ -105,6 +106,26 @@ export default function QuizPage() {
         <p>Quiz not found or is loading...</p>
       </div>
     );
+  }
+
+  const isPastDue = quiz.dueDate && new Date() > new Date(quiz.dueDate);
+
+  if (isPastDue) {
+    return (
+        <div className="container mx-auto max-w-2xl py-12 text-center">
+            <Card>
+                <CardHeader>
+                    <CardTitle className="font-headline text-2xl">Quiz Overdue</CardTitle>
+                    <CardDescription>The due date for this quiz has passed.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Button asChild>
+                        <Link href="/student/dashboard">Back to Dashboard</Link>
+                    </Button>
+                </CardContent>
+            </Card>
+        </div>
+    )
   }
 
   const progressValue = ((currentQuestionIndex + 1) / quiz.questions.length) * 100;

@@ -17,9 +17,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { ArrowLeft, Users, PlusCircle, BarChart2 } from "lucide-react";
+import { ArrowLeft, Users, PlusCircle, BarChart2, CalendarClock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { formatDistanceToNow } from "date-fns";
+import { format, formatDistanceToNow } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 
 export default function TeacherClassroomDetailPage() {
@@ -138,7 +138,15 @@ export default function TeacherClassroomDetailPage() {
                                 <Card key={quiz.id}>
                                     <CardHeader>
                                         <CardTitle>{quiz.title}</CardTitle>
-                                        <CardDescription>{quiz.questions.length} questions</CardDescription>
+                                        <CardDescription className="flex flex-col gap-2 pt-2">
+                                            <span>{quiz.questions.length} questions</span>
+                                            {quiz.dueDate && (
+                                                <span className="flex items-center gap-2 text-sm">
+                                                    <CalendarClock className="h-4 w-4" />
+                                                    Due by {format(new Date(quiz.dueDate), "PPP")}
+                                                </span>
+                                            )}
+                                        </CardDescription>
                                     </CardHeader>
                                     <CardContent>
                                         <p className="text-sm text-muted-foreground">{attemptCount} attempt(s)</p>
