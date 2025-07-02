@@ -16,7 +16,7 @@ const QuestionSchema = z.object({
   correctAnswer: z.string().describe('The correct answer from the options array.'),
 });
 
-export const GenerateQuizInputSchema = z.object({
+const GenerateQuizInputSchema = z.object({
   sourceType: z.enum(['topic', 'text']).describe('The source of content for the quiz.'),
   sourceContent: z.string().describe('The topic or text content for the quiz.'),
   numQuestions: z.coerce.number().int().min(1).max(10).describe('The number of questions to generate.'),
@@ -24,7 +24,7 @@ export const GenerateQuizInputSchema = z.object({
 });
 export type GenerateQuizInput = z.infer<typeof GenerateQuizInputSchema>;
 
-export const GenerateQuizOutputSchema = z.object({
+const GenerateQuizOutputSchema = z.object({
   questions: z.array(QuestionSchema).describe('The array of generated quiz questions.'),
 });
 export type GenerateQuizOutput = z.infer<typeof GenerateQuizOutputSchema>;
