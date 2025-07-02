@@ -4,16 +4,22 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { getClassroomsFromStorage, setClassroomsToStorage, getUsersFromStorage } from "@/lib/mock-data";
-import type { Classroom, User, Post } from "@/lib/types";
+import { 
+    getClassroomsFromStorage, 
+    setClassroomsToStorage, 
+    getUsersFromStorage,
+    getQuizzesFromStorage,
+    getQuizAttemptsFromStorage
+} from "@/lib/mock-data";
+import type { Classroom, User, Post, Quiz, QuizAttempt } from "@/lib/types";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { ArrowLeft, Users, PlusCircle } from "lucide-react";
+import { ArrowLeft, Users, PlusCircle, BarChart2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { format, formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 
 export default function TeacherClassroomDetailPage() {
@@ -27,6 +33,8 @@ export default function TeacherClassroomDetailPage() {
   const [members, setMembers] = useState<User[]>([]);
   const [newPostContent, setNewPostContent] = useState("");
   const [loading, setLoading] = useState(true);
+  const [classroomQuizzes, setClassroomQuizzes] = useState<Quiz[]>([]);
+  const [quizAttempts, setQuizAttempts] = useState<QuizAttempt[]>([]);
 
   useEffect(() => {
     if (user && classroomId) {
@@ -41,6 +49,13 @@ export default function TeacherClassroomDetailPage() {
 
       const allUsers = getUsersFromStorage();
       setMembers(allUsers.filter(u => currentClassroom.studentIds.includes(u.id)));
+      
+      const allQuizzes = getQuizzesFromStorage();
+      setClassroomQuizzes(allQuizzes.filter(q => q.classroomId === classroomId));
+
+      const allAttempts = getQuizAttemptsFromStorage();
+      setQuizAttempts(allAttempts);
+
       setLoading(false);
     }
   }, [user, classroomId, router]);
@@ -64,6 +79,10 @@ export default function TeacherClassroomDetailPage() {
         setNewPostContent("");
         toast({ title: "Post created!" });
     }
+  };
+
+  const getAttemptCount = (quizId: string) => {
+    return quizAttempts.filter(a => a.quizId === quizId).length;
   };
 
   if (loading || !classroom) {
@@ -110,6 +129,45 @@ export default function TeacherClassroomDetailPage() {
                 </CardContent>
             </Card>
             <section>
+                <h2 className="font-headline text-2xl mb-4">Classroom Quizzes</h2>
+                {classroomQuizzes.length > 0 ? (
+                    <div className="space-y-4">
+                        {classroomQuizzes.map(quiz => {
+                            const attemptCount = getAttemptCount(quiz.id);
+                            return (
+                                <Card key={quiz.id}>
+                                    <CardHeader>
+                                        <CardTitle>{quiz.title}</CardTitle>
+                                        <CardDescription>{quiz.questions.length} questions</CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <p className="text-sm text-muted-foreground">{attemptCount} attempt(s)</p>
+                                    </CardContent>
+                                    <CardFooter>
+                                        <Button asChild variant="outline" size="sm" disabled={attemptCount === 0}>
+                                            <Link href={`/teacher/quiz/${quiz.id}/results`}>
+                                                <BarChart2 className="mr-2 h-4 w-4" /> View Results
+                                            </Link>
+                                        </Button>
+                                    </CardFooter>
+                                </Card>
+                            )
+                        })}
+                    </div>
+                ) : (
+                    <Card className="text-center py-8">
+                        <CardContent className="flex flex-col items-center gap-2">
+                            <p className="text-muted-foreground">No quizzes have been created for this class yet.</p>
+                            <Button asChild variant="link">
+                                <Link href={`/teacher/quiz/create?classroomId=${classroomId}`}>
+                                    Create one now
+                                </Link>
+                            </Button>
+                        </CardContent>
+                    </Card>
+                )}
+            </section>
+             <section>
                 <h2 className="font-headline text-2xl mb-4">Classroom Posts</h2>
                 <div className="space-y-4">
                     {sortedPosts.map(post => (
