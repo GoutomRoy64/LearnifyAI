@@ -19,8 +19,8 @@ export async function generateQuizQuestions(input: GenerateQuizInput): Promise<{
     try {
         const output = await generateQuiz(input);
         return { questions: output.questions, error: null };
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error generating quiz questions:', error);
-        return { questions: [], error: 'Failed to generate quiz questions. Please try again later.' };
+        return { questions: [], error: error.message || 'Failed to generate quiz questions. Please try again later.' };
     }
 }
