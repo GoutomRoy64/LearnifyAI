@@ -4,8 +4,8 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { getClassroomsFromStorage, getUsersFromStorage, getQuizzesFromStorage } from "@/lib/mock-data";
-import type { Classroom, User, Post, Quiz } from "@/lib/types";
+import { getClassroomsFromStorage, getUsersFromStorage, getQuizzesFromStorage, getQuizAttemptsFromStorage } from "@/lib/mock-data";
+import type { Classroom, User, Post, Quiz, QuizAttempt } from "@/lib/types";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -25,6 +25,7 @@ export default function StudentClassroomDetailPage() {
   const [members, setMembers] = useState<User[]>([]);
   const [teacher, setTeacher] = useState<User | null>(null);
   const [classroomQuizzes, setClassroomQuizzes] = useState<Quiz[]>([]);
+  const [quizAttempts, setQuizAttempts] = useState<QuizAttempt[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -44,6 +45,9 @@ export default function StudentClassroomDetailPage() {
       
       const allQuizzes = getQuizzesFromStorage();
       setClassroomQuizzes(allQuizzes.filter(q => q.classroomId === classroomId));
+      
+      const allAttempts = getQuizAttemptsFromStorage();
+      setQuizAttempts(allAttempts.filter(a => a.studentId === user.id));
 
       setLoading(false);
     }
@@ -81,7 +85,10 @@ export default function StudentClassroomDetailPage() {
                  <h2 className="font-headline text-2xl mb-4">Classroom Quizzes</h2>
                  {classroomQuizzes.length > 0 ? (
                     <div className="grid sm:grid-cols-2 gap-4">
-                        {classroomQuizzes.map(quiz => <QuizCard key={quiz.id} quiz={quiz}/>)}
+                        {classroomQuizzes.map(quiz => {
+                            const isAttempted = quizAttempts.some(a => a.quizId === quiz.id);
+                            return <QuizCard key={quiz.id} quiz={quiz} isAttempted={isAttempted} />
+                        })}
                     </div>
                  ) : (
                     <Card className="text-center py-8">

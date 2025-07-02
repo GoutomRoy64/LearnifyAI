@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -68,7 +69,10 @@ function QuizzesTab({ quizzes, attempts }: { quizzes: Quiz[], attempts: QuizAtte
             <h2 className="font-headline text-2xl font-bold mt-12 mb-6">Available Public Quizzes</h2>
             {filteredQuizzes.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    {filteredQuizzes.map(quiz => <QuizCard key={quiz.id} quiz={quiz} />)}
+                    {filteredQuizzes.map(quiz => {
+                        const isAttempted = attempts.some(a => a.quizId === quiz.id);
+                        return <QuizCard key={quiz.id} quiz={quiz} isAttempted={isAttempted} />
+                    })}
                 </div>
             ) : (
                 <div className="text-center py-16 border-2 border-dashed rounded-lg">

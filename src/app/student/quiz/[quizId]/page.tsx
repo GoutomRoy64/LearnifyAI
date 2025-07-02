@@ -69,10 +69,19 @@ export default function QuizPage() {
   }, [user, quiz, answers, router, quizId, isSubmitted]);
   
   useEffect(() => {
+    if (user && quizId) {
+        const allAttempts = getQuizAttemptsFromStorage();
+        const hasAttempted = allAttempts.some(a => a.quizId === quizId && a.studentId === user.id);
+        if (hasAttempted) {
+            router.push(`/student/quiz/${quizId}/results`);
+            return;
+        }
+    }
+
     const allQuizzes = getQuizzesFromStorage();
     const currentQuiz = allQuizzes.find(q => q.id === quizId);
     setQuiz(currentQuiz);
-  }, [quizId]);
+  }, [quizId, user, router]);
 
   useEffect(() => {
     if (quiz?.timer && quiz.timer > 0) {

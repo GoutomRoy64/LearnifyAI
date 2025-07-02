@@ -2,15 +2,16 @@ import Link from "next/link";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import type { Quiz } from "@/lib/types";
-import { BookOpen, BarChart, ChevronRight, Clock, CalendarClock } from "lucide-react";
+import { BookOpen, BarChart, ChevronRight, Clock, CalendarClock, Eye } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 
 interface QuizCardProps {
   quiz: Quiz;
+  isAttempted?: boolean;
 }
 
-export function QuizCard({ quiz }: QuizCardProps) {
+export function QuizCard({ quiz, isAttempted }: QuizCardProps) {
   const skillLevelColors = {
     Beginner: "bg-green-100 text-green-800 border-green-200",
     Intermediate: "bg-yellow-100 text-yellow-800 border-yellow-200",
@@ -52,6 +53,13 @@ export function QuizCard({ quiz }: QuizCardProps) {
       <CardFooter>
         {isPastDue ? (
             <Button className="w-full" disabled>Past Due</Button>
+        ) : isAttempted ? (
+            <Button asChild className="w-full" variant="outline">
+              <Link href={`/student/quiz/${quiz.id}/results`}>
+                <Eye className="mr-2 h-4 w-4" />
+                View Results
+              </Link>
+            </Button>
         ) : (
             <Button asChild className="w-full">
               <Link href={`/student/quiz/${quiz.id}`}>
