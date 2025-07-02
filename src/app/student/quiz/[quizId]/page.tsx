@@ -62,16 +62,18 @@ export default function QuizPage() {
     
     router.push(`/student/quiz/${quizId}/results`);
   }, [user, quiz, answers, router, quizId, isSubmitted]);
-
+  
   useEffect(() => {
     const allQuizzes = getQuizzesFromStorage();
     const currentQuiz = allQuizzes.find(q => q.id === quizId);
     setQuiz(currentQuiz);
-
-    if (currentQuiz?.timer && currentQuiz.timer > 0) {
-        setTimeLeft(currentQuiz.timer * 60);
-    }
   }, [quizId]);
+
+  useEffect(() => {
+    if (quiz?.timer && quiz.timer > 0) {
+      setTimeLeft(quiz.timer * 60);
+    }
+  }, [quiz]);
 
   useEffect(() => {
     if (timeLeft === null || isSubmitted) return;
@@ -116,7 +118,7 @@ export default function QuizPage() {
 
   const goToPrevious = () => {
     if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex(prev => prev - 1);
+      setCurrentQuestionIndex(prev => prev + 1);
     }
   };
 
