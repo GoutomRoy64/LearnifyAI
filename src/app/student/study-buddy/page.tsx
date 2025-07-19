@@ -1,19 +1,20 @@
 "use client";
 
 import { useState, useRef, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import * as z from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { askStudyBuddy } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Send, BrainCircuit, User, Loader2 } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
+import { Form, FormField, FormItem, FormMessage } from '@/components/ui/form';
 
 const chatSchema = z.object({
   subject: z.string().min(1, 'Please select a subject.'),
@@ -39,8 +40,9 @@ export default function StudyBuddyPage() {
     resolver: zodResolver(chatSchema),
     defaultValues: { subject: '', question: '' },
   });
-
-  const { subject: selectedSubject } = form.getValues();
+  
+  const { watch, control, setValue, handleSubmit, resetField } = form;
+  const selectedSubject = watch('subject');
 
   useEffect(() => {
     if (scrollAreaRef.current) {
@@ -49,16 +51,16 @@ export default function StudyBuddyPage() {
         behavior: 'smooth',
       });
     }
-  }, [messages]);
+  }, [messages, isLoading]);
 
   const onSubmit = async (data: ChatFormValues) => {
     const userMessage: Message = { role: 'user', content: data.question };
     setMessages(prev => [...prev, userMessage]);
     setIsLoading(true);
-    form.reset({ ...data, question: '' });
+    resetField('question');
 
     const historyForApi = messages.map(msg => ({
-        role: msg.role,
+        role: msg.role as 'user' | 'model',
         content: [{ text: msg.content }]
     }));
 
@@ -87,6 +89,7 @@ export default function StudyBuddyPage() {
              <BrainCircuit className="h-8 w-8 text-primary" />
           </div>
           <CardTitle className="font-headline text-2xl">AI Study Buddy</CardTitle>
+          <CardDescription>Your personal AI tutor. Ask me anything!</CardDescription>
         </CardHeader>
         <CardContent className="flex-1 overflow-hidden">
           <ScrollArea className="h-full pr-4" ref={scrollAreaRef}>
@@ -104,7 +107,7 @@ export default function StudyBuddyPage() {
                                     <AvatarFallback><BrainCircuit className="h-4 w-4" /></AvatarFallback>
                                 </Avatar>
                             )}
-                             <div className={cn('max-w-md rounded-lg p-3', message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted')}>
+                             <div className={cn('max-w-md rounded-lg p-3 shadow-sm', message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted')}>
                                 <p className="text-sm whitespace-pre-wrap">{message.content}</p>
                             </div>
                              {message.role === 'user' && (
@@ -119,8 +122,8 @@ export default function StudyBuddyPage() {
                              <Avatar className="w-8 h-8 border">
                                 <AvatarFallback><BrainCircuit className="h-4 w-4" /></AvatarFallback>
                             </Avatar>
-                            <div className="max-w-md rounded-lg p-3 bg-muted">
-                               <Loader2 className="h-5 w-5 animate-spin" />
+                            <div className="max-w-md rounded-lg p-3 bg-muted shadow-sm flex items-center justify-center">
+                               <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
                             </div>
                         </div>
                     )}
@@ -129,27 +132,45 @@ export default function StudyBuddyPage() {
           </ScrollArea>
         </CardContent>
         <CardFooter>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="w-full flex items-start gap-2">
-             <Select onValueChange={(value) => form.setValue('subject', value)} defaultValue={form.getValues('subject')}>
-              <SelectTrigger className="w-[180px]" disabled={messages.length > 0}>
-                <SelectValue placeholder="Select Subject" />
-              </SelectTrigger>
-              <SelectContent>
-                {subjects.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-              </SelectContent>
-            </Select>
-            <div className="flex-1 relative">
-                <Input
-                    {...form.register('question')}
-                    placeholder={selectedSubject ? `Ask about ${selectedSubject}...` : 'Select a subject first...'}
-                    disabled={!selectedSubject || isLoading}
-                    autoComplete="off"
-                />
-            </div>
-            <Button type="submit" disabled={isLoading || !selectedSubject} size="icon">
-              <Send className="h-4 w-4" />
-            </Button>
-          </form>
+          <Form {...form}>
+            <form onSubmit={handleSubmit(onSubmit)} className="w-full flex items-start gap-2">
+              <FormField
+                  control={control}
+                  name="subject"
+                  render={({ field }) => (
+                      <FormItem>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <SelectTrigger className="w-[180px]">
+                                  <SelectValue placeholder="Select Subject" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                  {subjects.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                              </SelectContent>
+                          </Select>
+                          <FormMessage />
+                      </FormItem>
+                  )}
+              />
+              <FormField
+                  control={control}
+                  name="question"
+                  render={({ field }) => (
+                      <FormItem className="flex-1">
+                          <Input
+                              {...field}
+                              placeholder={selectedSubject ? `Ask about ${selectedSubject}...` : 'Select a subject first...'}
+                              disabled={!selectedSubject || isLoading}
+                              autoComplete="off"
+                          />
+                          <FormMessage />
+                      </FormItem>
+                  )}
+              />
+              <Button type="submit" disabled={isLoading || !selectedSubject} size="icon">
+                <Send className="h-4 w-4" />
+              </Button>
+            </form>
+          </Form>
         </CardFooter>
       </Card>
     </div>
