@@ -34,7 +34,11 @@ export async function studyBuddy(input: StudyBuddyInput): Promise<StudyBuddyOutp
 
 const prompt = ai.definePrompt({
   name: 'studyBuddyPrompt',
-  input: {schema: StudyBuddyInputSchema},
+  input: {schema: z.object({
+    subject: StudyBuddyInputSchema.shape.subject,
+    question: StudyBuddyInputSchema.shape.question,
+    formattedHistory: z.string().optional(),
+  })},
   output: {schema: StudyBuddyOutputSchema},
   prompt: `You are Learnify, a friendly and encouraging AI study buddy. Your goal is to help students understand concepts without giving them direct answers to test questions.
 
@@ -48,12 +52,7 @@ const prompt = ai.definePrompt({
   - Keep your responses concise and conversational.
 
   Here is the conversation history:
-  {{#if history}}
-  {{#each history}}
-    {{#if (eq role 'user')}}Student: {{content.0.text}}{{/if}}
-    {{#if (eq role 'model')}}You: {{content.0.text}}{{/if}}
-  {{/each}}
-  {{/if}}
+  {{{formattedHistory}}}
 
   Student's latest question: {{{question}}}
 
@@ -68,7 +67,19 @@ const studyBuddyFlow = ai.defineFlow(
     outputSchema: StudyBuddyOutputSchema,
   },
   async (input) => {
-    const {output} = await prompt(input);
+    
+    const formattedHistory = (input.history || []).map(message => {
+        if (message.role === 'user') {
+            return `Student: ${message.content[0].text}`;
+        }
+        return `You: ${message.content[0].text}`;
+    }).join('\n');
+
+    const {output} = await prompt({
+      subject: input.subject,
+      question: input.question,
+      formattedHistory,
+    });
     return { answer: output!.answer };
   }
 );
