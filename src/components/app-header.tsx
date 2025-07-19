@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuth } from "@/hooks/use-auth";
-import { LogOut, UserCircle, BookOpen, LayoutDashboard, School } from "lucide-react";
+import { LogOut, UserCircle, BookOpen, LayoutDashboard, School, BrainCircuit } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
@@ -14,6 +14,7 @@ export function AppHeader() {
 
   const getDashboardLink = () => `/${user?.role}/dashboard`;
   const getClassroomsLink = () => `/${user?.role}/classrooms`;
+  const getStudyBuddyLink = () => `/student/study-buddy`;
 
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-card/80 backdrop-blur-sm">
@@ -34,6 +35,13 @@ export function AppHeader() {
               <Link href={getClassroomsLink()} passHref>
                 <Button variant="link" className={cn("gap-2 text-muted-foreground", pathname.includes("classrooms") && "text-primary font-semibold")}>
                   <School /> Classrooms
+                </Button>
+              </Link>
+            )}
+            {user.role === 'student' && (
+              <Link href={getStudyBuddyLink()} passHref>
+                <Button variant="link" className={cn("gap-2 text-muted-foreground", pathname.includes("study-buddy") && "text-primary font-semibold")}>
+                  <BrainCircuit /> Study Buddy
                 </Button>
               </Link>
             )}
